@@ -1,41 +1,138 @@
 class Parser
-  def initialize(filename)
-    @fn = filename
+  def initialize(filename, outfilename, options)
+    # incoming filename
+    @opts = options
+    @outfilename = outfilename || filename + ".parse"
+    @outfilename = STDOUT if outfilename == '-'
+    # grab the file, read the lines, convert that into a hash of data
     @in = IO.readlines(filename).map do |line|                    # read each line and format to array
-      line = line.match( /(\d+:\d+:\d+\.\d+)\s\S+\s(\S+),\S+\t(\d+)\t(\S+)?/ ).captures     # match the end of the line "(host),3.9.2	(1)	(00)" => ["host", "0", "00"]
+      # match groups:   1: first digit 2: date and time 3: time           4: sender   5: size  6:value
+      m = line.match( /(\d+)\t([^,]+, \d\d\d\d (\d\d:\d\d:\d\d\.\d+) \w+)\t(\S+),\S+\t(\d+)\t(\S+)?/ ).captures
+      line = {  bitnum:   [m[0].to_i]*2,      # bitnum => [0,0] or [307,307]
+                date:     m[1],
+                time:     m[2],
+                sender:   m[3],
+                size:     m[4].to_i,
+                contents: m[5]
+              }
     end
     @out = []
   end # initialize
 
   def parse
-    print "Converted #{@in.length} lines "
-    @in.delete_if do |line|                                       # remove line if null packet from device
-      line[2] == "0"
-    end # delete_if
-    @in = @in.chunk{ |line| line[1] }.map{ |sender, bytes| [bytes.first.first,sender,bytes.map(&:last)] } # time sender bytes
-    @in.each_with_index do |data,idx|
-      time, sender, bytes = data
-      while(sender == "host" && bytes.length % 7 != 0)
-        bytes << @in[idx+2][2].shift
-      end
-      bytes.each_slice(7) do |word|
-        word = word.join(":")
-        @out << [time,sender,word]
-      end
-    end  # each
-    puts "into #{@out.length} packets"
+    print "Converted #{@in.length} lines " unless @outfilename == STDOUT
+    host = { sender: 'host', size: 0, contents: [], bitnum: [] }
+    @in.each_with_index do |packet,idx|
+      next if packet[:size] == 0              # first, remove all null packets
+      if packet[:sender] == 'host'            # group host packets into groups of 7
+        if host[:size] == 0                   # new packet, use this timestamp
+          host[:date] = packet[:date]
+          host[:time] = packet[:time]
+        end
+        host[:size] += packet[:size]
+        host[:contents] << packet[:contents]
+        host[:bitnum] << packet[:bitnum][0]   # add the bitnum to the group
+        if host[:size] >= 7                   # if host is complete (7 bytes)
+          host[:contents] = host[:contents].join(":") # join the contents to one string
+          host[:bitnum] = host[:bitnum].minmax        # set bitnum to the largest and smallest bitnums
+          @out << host
+          host = { sender: 'host', size: 0, contents: [], bitnum: [] }
+        end
+      else                                    # print all other packets as they appear
+        @out << packet
+      end # packet[:sender]
+    end # each
+    puts "into #{@out.length} packets" unless @outfilename == STDOUT
     return self
   end # parse
 
   def fout
-    File.open(@fn+".parse","w") do |file|
-      @out.each do |time,sender,word|
-        file.puts "#{time}\t#{sender}\t#{word}"
-      end # each
-    end # File.open
+    if @outfilename == STDOUT
+      file = STDOUT
+    else
+      puts "Saving to #{@outfilename}"
+      file = File.open(@outfilename,'w')
+    end
+    @out.each do |packet|
+      if @opts['bitnum']
+        file.print "#{packet[:bitnum][0].to_s.rjust(4,'0')}-#{packet[:bitnum][1].to_s.rjust(4,'0')}\t"
+      end # bitnum
+
+      if @opts['date']
+        file.print "#{packet[:date]}\t"
+      else
+        if @opts['time']
+          file.print "#{packet[:time]}\t"
+        end
+      end # date
+      file.puts "#{packet[:sender]}\t#{packet[:contents]}"
+    end # @out.each
+    file.close
   end # fout
+
+  def self.help
+    puts "ruby parser.rb [options] filename\n\
+	-c       	add the first digit from the raw input\n\
+	-d       	add the date and time to the output (implies -t)\n\
+	-o output	change the output file (default: filename.parse) (- for STDOUT)\n\
+	-t       	add the timestamp to the output\n"
+  end # help
 end # class Parser
 
+
+# this rountine sets
+# bitnum (bool) to print bitnum
+# date (bool) to print date and time
+# time (bool) to print just time
+# outfilename to set the output location
+# filename to set the input location
 if __FILE__ == $0
-  Parser.new(ARGV.shift).parse.fout
+  filename = nil
+  outfilename = nil
+  opts = Hash.new
+  while( arg = ARGV.shift )
+    case(arg)
+    when('-c') # print bitnum
+      opts['bitnum'] = true
+
+    when('-d') # print date and time
+      opts['date'] = true
+
+    when('-t') # print only time
+      opts['time'] = true
+
+    when('-o') # change file output location
+      outfilename = ARGV.shift
+      if !outfilename
+        STDERR.puts "No output filename given with -o argument."
+        Parser.help
+        exit(1)
+      end
+
+    when('-h') # ask for help menu
+      Parser.help
+      exit(0)
+    when('--help')
+      Parser.help
+      exit(0)
+
+    when(/-./) # not understood, error
+      STDERR.puts "#{arg} not understood"
+      Parser.help
+      exit(1)
+
+    else # a filename
+      if filename
+        STDERR.puts "Ignoring file: #{filename}"
+      end
+      filename = arg
+    end # case(arg)
+  end # while args
+  if filename # was a file given?
+    Parser.new(filename, outfilename, opts).parse.fout
+  else
+    STDERR.puts "No file given."
+    Parser.help
+    exit(1)
+  end
 end
