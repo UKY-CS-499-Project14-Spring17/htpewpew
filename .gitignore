@@ -1,0 +1,5 @@
+# ignore object files that are generated
+*.o
+
+# ignore vim swap files
+.*.sw*
