@@ -26,10 +26,10 @@ void resize_image(MagickWand** wand)
 {
   size_t width, height;
   // get the image size
-  width = MagickGetImageWidth(*wand);
+  width  = MagickGetImageWidth(*wand);
   height = MagickGetImageHeight(*wand);
   // only resize if it's bigger than 512x512
-  fprintf(stdout, "size:   %dx%d\n", (int)width, (int)height);
+  fprintf(stdout, "size:  \t%dx%d\n", (int)width, (int)height);
   if (width > 512 || height > 512) {
     if (width > height) {
       height = (int)((height/(float) width) * 512);
@@ -38,7 +38,7 @@ void resize_image(MagickWand** wand)
       width  = (int)((width/(float) height) * 512);
       height = 512;
     }
-    fprintf(stdout, "resize: %dx%d\n", (int)width, (int)height);
+    fprintf(stdout, "resize:\t%dx%d\n", (int)width, (int)height);
     MagickBooleanType status = MagickAdaptiveResizeImage(*wand, width, height);
     if (status == MagickFalse)
       throw_wand_exception(*wand);
@@ -46,15 +46,14 @@ void resize_image(MagickWand** wand)
   // alter compact size
 }
 
-void threshold_image(MagickWand** wand)
+void threshold_image(MagickWand** wand, float threshold)
 {
-  // 10% ~ 6500.0
-  // 40% ~ 27000.0
-  // 50% ~ 30500.0
-  // 60% ~ 40000.0
-  // 90% ~ 58500.0
-  // smaller numbers (more white) <---------> (more black) larger numbers
-  MagickBooleanType status = MagickThresholdImage(*wand, 30500.0);
+  // 0.0 (more white) <---------> (more black) 1.0
+  // quantum depth should never be bigger than 32 bits (4 bytes) so a unsigned int should always hold it
+  unsigned int depth;
+  depth = QuantumRange;
+
+  MagickBooleanType status = MagickThresholdImage(*wand, depth*threshold);
   if (status == MagickFalse)
     throw_wand_exception(*wand);
 }
@@ -75,7 +74,7 @@ int prepare_image(char* image, char* output)
   //    Greyscale image
   greyscale_image(&magick_wand);
   //    Greyscale image
-  threshold_image(&magick_wand);
+  threshold_image(&magick_wand,0.5);
   //    Write the image, then destroy the wand.
   status = MagickWriteImages(magick_wand, output, MagickTrue);
   if (status == MagickFalse)
