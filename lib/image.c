@@ -15,13 +15,14 @@ void throw_wand_exception(MagickWand* wand)
   exit(-1);
 }
 
-void greyscale_image(MagickWand** wand)
-{
-  MagickBooleanType status = MagickQuantizeImage(*wand, 255, GRAYColorspace, 0, MagickFalse, MagickTrue);  
-  if (status == MagickFalse)
-    throw_wand_exception(*wand);
-}
-
+// resize_image
+// inputs:
+//    wand -- MagickWand** -- passed by reference
+// outputs:
+//    void
+// side effects:
+//    wand image is resized so the longest edge is 512px
+//    if the image is smaller than 512x512, nothing happens
 void resize_image(MagickWand** wand)
 {
   size_t width, height;
@@ -46,10 +47,36 @@ void resize_image(MagickWand** wand)
   // alter compact size
 }
 
+// greyscale_image
+// inputs:
+//    wand -- MagickWand** -- passed by reference
+// outputs:
+//    void
+// side effects:
+//    wand image is changed to greyscale using -quantize
+//    TODO: is this the best way to do this?
+void greyscale_image(MagickWand** wand)
+{
+  MagickBooleanType status = MagickQuantizeImage(*wand, 255, GRAYColorspace, 0, MagickFalse, MagickTrue);  
+  if (status == MagickFalse)
+    throw_wand_exception(*wand);
+}
+
+// threshold_image
+// inputs:
+//    wand      -- MagickWand** -- passed by reference
+//    threshold -- double       -- value between 0.0 and 1.0
+// outputs:
+//    void
+// side effects:
+//    wand image is changed to threshold
+//    TODO: add support for native numbers 0..QuantumRange
+//    TODO: add support for percentages 0..100%
 void threshold_image(MagickWand** wand, float threshold)
 {
   // 0.0 (more white) <---------> (more black) 1.0
   // quantum depth should never be bigger than 32 bits (4 bytes) so a unsigned int should always hold it
+  // there's some details here: http://www.imagemagick.org/Usage/basics/#quality
   unsigned int depth;
   depth = QuantumRange;
 
@@ -58,6 +85,15 @@ void threshold_image(MagickWand** wand, float threshold)
     throw_wand_exception(*wand);
 }
 
+// prepare_image
+// inputs:
+//    image  -- char* -- filepath to image
+//    output -- char* -- filepath to store image
+// outputs:
+//    void
+// side effects:
+//    wand image created, file changed and output
+//    TODO: add options for threshold/greyscale and image dry-run
 int prepare_image(char* image, char* output)
 {
   MagickBooleanType status;
@@ -84,6 +120,14 @@ int prepare_image(char* image, char* output)
   return(0);
 }
 
+// main
+// inputs:
+//    argc -- int    -- number of argument inputs
+//    argv -- argv** -- array of argument inputs
+// outputs:
+//    void
+// side effects:
+//    wand image is changed to greyscale using -quantize
 int main(int argc,char **argv)
 {
   if (argc != 3)
