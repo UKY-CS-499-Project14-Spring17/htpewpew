@@ -4,9 +4,9 @@
 #include <string.h>
 
 const struct HTPewPewOptions HTPEWPEW_DEFAULT_OPTS = {  "" /* filename */,
-"" /* output */, "" /* portname */, false /* is_image */, false /* dry_run */,
--1 /* threshold */, 60 /* TODO burn_time */, 10 /* TODO intensity */,
-false /* offset */, 0 /* x_offset */, 0 /* y_offset */ };
+"" /* output */, "" /* portname */, false /* silent */, false /* verbose */, false /* is_image */,
+false /* dry_run */, -1 /* threshold */, 60 /* TODO burn_time */,
+10 /* TODO intensity */, false /* offset */, 0 /* x_offset */, 0 /* y_offset */ };
 
 // main
 // inputs:
@@ -20,8 +20,24 @@ false /* offset */, 0 /* x_offset */, 0 /* y_offset */ };
 //    can exit with status 0 if '-h' or '--help' are used
 int main(int argc,char **argv)
 {
-  char* arg, * old_arg;
+  char* arg, * old_arg, warn[PATH_MAX] = "", err[PATH_MAX] = "";
   struct HTPewPewOptions options = HTPEWPEW_DEFAULT_OPTS;
+  for( int argx = 1; argx < argc; argx = argx + 1 ) {
+    arg = argv[argx];
+    if( strcmp(arg,"-v") == 0 ||
+        strcmp(arg,"--verbose") == 0 ) { // active verbose mode
+      options.verbose = true;
+      fnote("Verbose mode enabled.");
+    } else if( strcmp(arg,"-s") == 0 ||
+        strcmp(arg,"--silent") == 0 ) { // active verbose mode
+      options.silent = true;
+    }
+    if( options.silent && options.verbose) { // can't do both
+      ferr("Cannot active both verbose mode and silent mode. Quitting.\n");
+      helpmac();
+      exit(1);
+    }
+  }
   // check each argument, prepare data
   for( int argx = 1; argx < argc; argx = argx + 1 ) {
     arg = argv[argx];
@@ -46,40 +62,17 @@ int main(int argc,char **argv)
 
     } else if( strcmp(arg, "-o") == 0 ||
         strcmp(arg, "--output") == 0 ) { // set output destination
-// TODO combine -o and -p with a new cli function. They're similar
-      argx = argx + 1; // step forward to next field
-      arg = argv[argx];
-      if( argx < argc ) { // check that argument is in bounds
-        if( arg[0] == '-') { // if it starts with a -*
-        // it's probably a option, this is not what we want
-          fwarn("You probably don't want a file named %s. Proceeding anyways.\n",argv[argx]);
-        } else {
-          fnote("Image output set to %s.\n", arg);
-        }
-        strcpy(options.output, arg);
-      } else {
-        ferr("Argument %s requires a filename for output.\n", old_arg);
-        helpmac();
-        exit(1);
-      }
+      sprintf(warn,"You probably don't want a file named %s. Proceeding anyways.\n",argv[argx+1]);
+      sprintf(err, "Argument %s requires a filename for output.\n", old_arg);
+      strcpy(options.output, capture_cli_string(&argx, argc, argv, err, warn));
+      fnote("Image output set to %s.\n", options.output);
 
     } else if( strcmp(arg, "-p") == 0 ||
                strcmp(arg, "--port") == 0 ) { // set serial port
-      argx = argx + 1; // step forward to next field
-      arg = argv[argx];
-      if( argx < argc ) { // check that argument is in bounds
-        if( arg[0] != '/') { // if it starts with a -*
-        // it's probably not a filepath, this is not what we want
-          fwarn("You probably don't want a serial port named %s. Proceeding anyways.\n",argv[argx]);
-        } else {
-          fnote("Port set to %s.\n", arg);
-        }
-        strcpy(options.portname, arg);
-      } else {
-        ferr("Argument %s requires a serial port (i.e. /dev/ttyUSB0) for connection.\n", old_arg);
-        helpmac();
-        exit(1);
-      }
+      sprintf(warn,"You probably don't want a serial port named %s. Proceeding anyways.\n",argv[argx+1]);
+      sprintf(err, "Argument %s requires a serial port (i.e. /dev/ttyUSB0) for connection.\n", old_arg);
+      strcpy(options.portname, capture_cli_string(&argx, argc, argv, err, warn));
+      fnote("Port set to %s.\n", arg);
 
     } else if( strcmp(arg, "-t") == 0 ||
                strcmp(arg, "--bw") == 0 ||
@@ -102,6 +95,11 @@ int main(int argc,char **argv)
         fnote("Threshold set to 50%% by default.\n");
         options.threshold = 50;
       }
+
+    } else if( strcmp(arg, "-s") == 0 ||
+               strcmp(arg, "--silent") == 0 ||
+               strcmp(arg, "-v") == 0 ||
+               strcmp(arg, "--verbose") == 0 ) { // do nothing, verbose and silent already set
 
     } else if( strcmp(arg, "-x") == 0 ||
                strcmp(arg, "--x-offset") == 0 ) { // set x offset

@@ -11,6 +11,9 @@ struct HTPewPewOptions {
   char output[PATH_MAX];
   // string of portname
   char portname[PATH_MAX];
+  // silent (supress fmsg) & verbose (include fnote) mode
+  bool silent;
+  bool verbose;
   // should set a flag if file is image or gcode, two seperate routes
   bool is_image;
   // draw a box and quit

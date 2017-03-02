@@ -7,3 +7,6 @@ lib/htpewpew
 # ignore vim swap files
 .*.sw*
 
+# images should be manually installed from now on
+*.jpg
+*.png
