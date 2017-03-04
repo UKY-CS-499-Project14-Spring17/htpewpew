@@ -1,5 +1,4 @@
 #include "image.h"
-#include "options.h"
 
 // grabbed this exception code from:
 // https://www.imagemagick.org/script/magick-wand.php
@@ -29,7 +28,7 @@ void resize_image(MagickWand** wand)
   width  = MagickGetImageWidth(*wand);
   height = MagickGetImageHeight(*wand);
   // only resize if it's bigger than 512x512
-  fprintf(stdout, "size:  \t%dx%d\n", (int)width, (int)height);
+  fmsg("size:  \t%dx%d\n", (int)width, (int)height);
   if (width > 512 || height > 512) {
     if (width > height) {
       height = (int)((height/(float) width) * 512);
@@ -38,7 +37,7 @@ void resize_image(MagickWand** wand)
       width  = (int)((width/(float) height) * 512);
       height = 512;
     }
-    fprintf(stdout, "resize:\t%dx%d\n", (int)width, (int)height);
+    fmsg("resize:\t%dx%d\n", (int)width, (int)height);
     MagickBooleanType status = MagickAdaptiveResizeImage(*wand, width, height);
     if (status == MagickFalse)
       throw_wand_exception(*wand);
@@ -87,7 +86,7 @@ void threshold_image(MagickWand** wand, int threshold)
 // side effects:
 //    wand image created, file changed and output
 //    TODO: add options for threshold/greyscale and image dry-run
-int prepare_image(struct HTPewPewOptions opts)
+int prepare_image(struct htpewpew_opts opts)
 {
   MagickBooleanType status;
   MagickWand* magick_wand;
@@ -98,18 +97,25 @@ int prepare_image(struct HTPewPewOptions opts)
 
   //    Read an image.
   MagickWandGenesis();
-  magick_wand = NewMagickWand();  
-  status = MagickReadImage(magick_wand, opts.filename);
+  magick_wand = NewMagickWand();
+  fnote("Reading Image\n");
+  status = MagickReadImage(magick_wand, opts.infile);
   if (status == MagickFalse)
     throw_wand_exception(magick_wand);
+  fnote("Resizing Image\n");
   resize_image(&magick_wand);
-  if (opts.threshold == -1) // skip threshold
+  if (opts.threshold == -1) { // skip threshold
+    fnote("Converting to greyscale\n");
     greyscale_image(&magick_wand);
-  else // don't bother greyscaling first
+  } else { // don't bother greyscaling first
+    fnote("Converting to black and white. Threshold = %i%%\n", opts.threshold);
     threshold_image(&magick_wand, depth);
-  //    Write the image, then destroy the wand.
-  if( opts.output[0] != '\0' ) { // if there is an output file
-    status = MagickWriteImages(magick_wand, opts.output, MagickTrue);
+  }
+  fnote("Conversion complete\n");
+  // Write the image, then destroy the wand.
+  if( opts.outfile != NULL ) { // if there is an output file
+    fnote("Writing temporary image to %s\n", opts.outfile);
+    status = MagickWriteImages(magick_wand, opts.outfile, MagickTrue);
     if (status == MagickFalse)
       throw_wand_exception(magick_wand);
   }
