@@ -1,0 +1,12 @@
+# ignore the executable, in case that get's generated
+lib/htpewpew
+
+# ignore object files that are generated
+*.o
+
+# ignore vim swap files
+.*.sw*
+
+# images should be manually installed from now on
+*.jpg
+*.png
