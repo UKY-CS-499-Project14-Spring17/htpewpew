@@ -66,12 +66,10 @@ class Parser
     end
     @out.each do |packet|
       if packet[:sender] == 'host'
-        packet[:contents].split(":").map do |byte|
-          file.write byte.to_i(16).chr
-          sleep(0.007) # how to improve?
-        end
-        if packet[:contents] =~ /^15:/ # start run
-          sleep(2) # this could be shorter
+        file.write packet[:contents].split(":").map { |byte| byte.to_i(16).chr }.join
+        sleep(0.015) # how to improve?
+        if packet[:contents] =~ /^15:/ || packet[:contents] =~ /^3d/ || packet[:contents] =~ /^5b/ # start run
+          file.readline(4) # look for a response
         end
       end
     end # @out.each
