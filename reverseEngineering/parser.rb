@@ -1,3 +1,5 @@
+require 'serialport'
+
 class Parser
   def initialize(filename, outfilename, options)
     # incoming filename
@@ -46,6 +48,35 @@ class Parser
     return self
   end # parse
 
+
+  def hexout
+    if @outfilename == STDOUT
+      file = STDOUT
+    elsif @outfilename =~ /^\/dev\// # serial mode
+      baud_rate = 115200
+      data_bits = 8
+      stop_bits = 1
+      parity = SerialPort::NONE
+      
+      file = SerialPort.new(@outfilename, baud_rate, data_bits, stop_bits, parity)
+    else
+      puts "Saving to #{@outfilename}"
+      file = File.open(@outfilename,'w')
+    end
+    @out.each do |packet|
+      if packet[:sender] == 'host'
+        packet[:contents].split(":").map do |byte|
+          file.write byte.to_i(16).chr
+          sleep(0.007) # how to improve?
+        end
+        if packet[:contents] =~ /^15:/ # start run
+          sleep(2) # this could be shorter
+        end
+      end
+    end # @out.each
+    file.close
+  end # fout
+
   def fout
     if @outfilename == STDOUT
       file = STDOUT
@@ -90,6 +121,7 @@ if __FILE__ == $0
   filename = nil
   outfilename = nil
   opts = Hash.new
+  hex = false
   while( arg = ARGV.shift )
     case(arg)
     when('-c') # print bitnum
@@ -108,6 +140,11 @@ if __FILE__ == $0
         Parser.help
         exit(1)
       end
+
+    when('-x') # hex mode!
+      hex = true
+    when('--hex')
+      hex = true
 
     when('-h') # ask for help menu
       Parser.help
@@ -129,7 +166,11 @@ if __FILE__ == $0
     end # case(arg)
   end # while args
   if filename # was a file given?
-    Parser.new(filename, outfilename, opts).parse.fout
+    if hex
+      Parser.new(filename, outfilename, opts).parse.hexout
+    else
+      Parser.new(filename, outfilename, opts).parse.fout
+    end
   else
     STDERR.puts "No file given."
     Parser.help
