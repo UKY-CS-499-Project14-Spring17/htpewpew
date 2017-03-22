@@ -1,3 +1,4 @@
+require 'time'
 require 'serialport'
 
 class Parser
@@ -11,8 +12,8 @@ class Parser
       # match groups:   1: first digit 2: date and time 3: time           4: sender   5: size  6:value
       m = line.match( /(\d+)\t([^,]+, \d\d\d\d (\d\d:\d\d:\d\d\.\d+) \w+)\t(\S+),\S+\t(\d+)\t(\S+)?/ ).captures
       line = {  bitnum:   [m[0].to_i]*2,      # bitnum => [0,0] or [307,307]
-                date:     m[1],
-                time:     m[2],
+                date:     Time.parse(m[1]),
+                time:     Time.parse(m[2]),
                 sender:   m[3],
                 size:     m[4].to_i,
                 contents: m[5]
@@ -84,16 +85,24 @@ class Parser
       puts "Saving to #{@outfilename}"
       file = File.open(@outfilename,'w')
     end
+    last_time = @out.first[:time]
     @out.each do |packet|
       if @opts['bitnum']
         file.print "#{packet[:bitnum][0].to_s.rjust(4,'0')}-#{packet[:bitnum][1].to_s.rjust(4,'0')}\t"
       end # bitnum
 
       if @opts['date']
-        file.print "#{packet[:date]}\t"
+        file.print "#{packet[:date].strftime("%b %_m, %Y %T.%9N")}\t"
       else
         if @opts['time']
-          file.print "#{packet[:time]}\t"
+          file.print "#{packet[:time].strftime("%T.%9N")}\t"
+        else
+          if @opts['timediff']
+            file.print "#{(packet[:time] - last_time).to_s.ljust(8,'0') }\t"
+            if packet[:sender] == 'host'
+              last_time = packet[:time]
+            end
+          end
         end
       end # date
       file.puts "#{packet[:sender]}\t#{packet[:contents]}"
@@ -106,7 +115,8 @@ class Parser
 	-c       	add the first digit from the raw input\n\
 	-d       	add the date and time to the output (implies -t)\n\
 	-o output	change the output file (default: filename.parse) (- for STDOUT)\n\
-	-t       	add the timestamp to the output\n"
+	-t       	add the timestamp to the output\n\
+	-ti     	add the difference between timestamps\n"
   end # help
 end # class Parser
 
@@ -129,6 +139,9 @@ if __FILE__ == $0
 
     when('-d') # print date and time
       opts['date'] = true
+
+    when('-ti')
+      opts['timediff'] = true
 
     when('-t') # print only time
       opts['time'] = true
