@@ -1,5 +1,6 @@
 #include "cli.h"
 #include "image.h"
+#include "pixelator.h"
 #include "options.h"
 #include <argp.h>
 
@@ -160,7 +161,10 @@ int main (int argc, char **argv)
     ferr("Interactive shell not yet supported\n"); // TODO
     return 1;
   } else {
-    prepare_image(options);
+    MagickWand* wand = prepare_image(options);
+    struct pixelator_state* state = pixelator_init(options,wand);
+    get_next_pixel(state);
+    cleanup_image(wand);
   }
 
   return 0;
