@@ -9,8 +9,9 @@ struct pixelator_state
   // image file location, basically
   MagickWand* wand;
   PixelIterator* it;
-  // current x location for scanning
+  // current x & y location for scanning
   short x;
+  short y;
   // scan_dir
   // 0 = horizontal
   // 1 = vertical

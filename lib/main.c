@@ -75,7 +75,7 @@ static error_t parse_opt (int key, char *arg, struct argp_state *state) // check
       if( a->outfile[0] == '-') {
         fwarn("%s does not look like a path to a file\n", a->outfile);
       }
-      fnote("Image output set to %i\n",a->outfile);
+      fnote("Image output set to %s\n",a->outfile);
       break;
     case 'p':
       a->port = arg; // TODO validate
@@ -163,7 +163,10 @@ int main (int argc, char **argv)
   } else {
     MagickWand* wand = prepare_image(options);
     struct pixelator_state* state = pixelator_init(options,wand);
-    get_next_pixel(state);
+    struct pixel* px;
+    while( (px = get_next_pixel(state)) != NULL ) {
+      free(px);
+    }
     cleanup_image(wand);
   }
 
