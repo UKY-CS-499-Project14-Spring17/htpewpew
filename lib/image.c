@@ -8,7 +8,7 @@ void throw_wand_exception(MagickWand* wand)
   ExceptionType severity;
 
   description=MagickGetException(wand, &severity);
-  (void) fprintf(stderr,"%s %s %lu %s\n", GetMagickModule(), description);
+  (void) ferr("%s %s %lu %s\n", GetMagickModule(), description);
   description=(char *) MagickRelinquishMemory(description);
   exit(-1);
 }
@@ -70,7 +70,7 @@ void greyscale_image(MagickWand** wand)
 //    wand image is changed to threshold
 //    TODO: add support for native numbers 0..QuantumRange
 //    TODO: add support for percentages 0..100%
-void threshold_image(MagickWand** wand, int threshold)
+void threshold_image(MagickWand** wand, Quantum threshold)
 {
   MagickBooleanType status = MagickThresholdImage(*wand, threshold);
   if (status == MagickFalse)
@@ -86,14 +86,14 @@ void threshold_image(MagickWand** wand, int threshold)
 // side effects:
 //    wand image created, file changed and output
 //    TODO: add options for threshold/greyscale and image dry-run
-int prepare_image(struct htpewpew_opts opts)
+MagickWand* prepare_image(struct htpewpew_opts opts)
 {
   MagickBooleanType status;
   MagickWand* magick_wand;
   
   // quantum depth should never be bigger than 32 bits (4 bytes) so a unsigned int should always hold it
   // there's some details here: http://www.imagemagick.org/Usage/basics/#quality
-  unsigned int depth = opts.threshold * (QuantumRange / 100);
+  Quantum depth = opts.threshold * (QuantumRange / 100);
 
   //    Read an image.
   MagickWandGenesis();
@@ -119,7 +119,11 @@ int prepare_image(struct htpewpew_opts opts)
     if (status == MagickFalse)
       throw_wand_exception(magick_wand);
   }
-  magick_wand = DestroyMagickWand(magick_wand);
+  return(magick_wand);
+}
+
+int cleanup_image(MagickWand* wand) {
+  wand = DestroyMagickWand(wand);
   MagickWandTerminus();
   return(0);
 }

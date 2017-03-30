@@ -35,7 +35,7 @@
         newtio.c_lflag = 0;
          
         newtio.c_cc[VTIME]    = 0;   /* inter-character timer unused */
-        newtio.c_cc[VMIN]     = 4;   /* blocking read until 4 chars received */
+        newtio.c_cc[VMIN]     = 0;   /* blocking read until 4 chars received */
         
         tcflush(fd, TCIFLUSH);
         tcsetattr(fd,TCSANOW,&newtio);

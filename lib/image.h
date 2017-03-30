@@ -11,8 +11,9 @@ void throw_wand_exception(MagickWand* wand);
 
 void resize_image(MagickWand** wand);
 void greyscale_image(MagickWand** wand);
-void threshold_image(MagickWand** wand, int threshold);
+void threshold_image(MagickWand** wand, Quantum threshold);
 
-int prepare_image(struct htpewpew_opts opts);
+MagickWand* prepare_image(struct htpewpew_opts opts);
+int cleanup_image(MagickWand* wand);
 
 #endif
