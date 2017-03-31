@@ -4,7 +4,7 @@
 #include "image.h"
 
 // This struct is used by the pixelator to decide where it is in the image
-struct pixelator_state
+typedef struct pixelator_state
 {
   // image file location, basically
   MagickWand* wand;
@@ -15,16 +15,16 @@ struct pixelator_state
   // 0 = horizontal
   // 1 = vertical
   unsigned char scan_dir; 
-};
+}PixelatorState;
 
-struct pixel
+typedef struct pixel
 {
   // x & y should never exceed 1300 (0x0500)
   short x;
   short y;
   // value cannot exceed 255
   unsigned char intensity;
-};
+}Pixel;
 
 struct pixelator_state* pixelator_init(struct htpewpew_opts opts, MagickWand* wand);
 struct pixel* get_top_left_pixel(struct pixelator_state* state);
