@@ -7,11 +7,30 @@ PixelatorState* pixelator_init(HTPewPewOpts opts, MagickWand* wand) {
   // set default values
   state->x = -1;
   state->y = 0;
+  state->px = NULL;
   state->it = NewPixelIterator(wand);
   state->scan_dir = 0;
   // TODO change scan direction
   // TODO the fuction
   return(state);
+}
+
+Pixel* get_top_left_pixel(PixelatorState* state) {
+  if( state->px == NULL )
+    state->px = malloc( sizeof(*(state->px)) );
+  state->px->x = 0;
+  state->px->y = 0;
+  state->px->intensity = 0;
+  return(state->px);
+}
+
+Pixel* get_bottom_right_pixel(PixelatorState* state) {
+  if( state->px == NULL )
+    state->px = malloc( sizeof(*(state->px)) );
+  state->px->x = 0x459;
+  state->px->y = 0x459;
+  state->px->intensity = 0;
+  return(state->px);
 }
 
 Pixel* get_next_pixel(PixelatorState* state) {
@@ -21,8 +40,8 @@ Pixel* get_next_pixel(PixelatorState* state) {
   double hue, sat, light_d;
   unsigned char darkness;
   PixelWand** pwand;
-  Pixel* px;
-  px = malloc( sizeof(*px) );
+  if( state->px == NULL )
+    state->px = malloc( sizeof(*(state->px)) );
   // check that PixelIterator is valid
   if (state->it == NULL)
     throw_wand_exception(state->wand);
@@ -37,10 +56,10 @@ Pixel* get_next_pixel(PixelatorState* state) {
       if( darkness != 0 ) {
         state->x = x;
         fnote("y=%d x=%d i=%d\n",state->y, state->x, darkness);
-        px->x = state->x;
-        px->y = state->y;
-        px->intensity = darkness;
-        return(px);
+        state->px->x = state->x;
+        state->px->y = state->y;
+        state->px->intensity = darkness;
+        return(state->px);
       }
     }
     x = 0;
@@ -53,6 +72,7 @@ Pixel* get_next_pixel(PixelatorState* state) {
   // if you get here, there are no pixels left
   // the image is complete
   state->it = DestroyPixelIterator(state->it);
-  px = NULL;
-  return(px);
+  free(state->px);
+  state->px = NULL;
+  return(state->px);
 }

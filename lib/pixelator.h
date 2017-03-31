@@ -3,12 +3,22 @@
 
 #include "image.h"
 
+typedef struct pixel
+{
+  // x & y should never exceed 1300 (0x0500)
+  short x;
+  short y;
+  // value cannot exceed 255
+  unsigned char intensity;
+} Pixel;
+
 // This struct is used by the pixelator to decide where it is in the image
 typedef struct pixelator_state
 {
   // image file location, basically
   MagickWand* wand;
   PixelIterator* it;
+  Pixel* px;
   // current x & y location for scanning
   short x;
   short y;
@@ -18,15 +28,6 @@ typedef struct pixelator_state
   unsigned char scan_dir; 
   int carver_handle; 
 } PixelatorState;
-
-typedef struct pixel
-{
-  // x & y should never exceed 1300 (0x0500)
-  short x;
-  short y;
-  // value cannot exceed 255
-  unsigned char intensity;
-} Pixel;
 
 PixelatorState* pixelator_init(HTPewPewOpts opts, MagickWand* wand);
 Pixel* get_top_left_pixel(PixelatorState* state);
