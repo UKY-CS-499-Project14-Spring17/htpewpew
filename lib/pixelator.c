@@ -1,8 +1,8 @@
 #include "pixelator.h"
 
-struct pixelator_state* pixelator_init(struct htpewpew_opts opts, MagickWand* wand) {
+PixelatorState* pixelator_init(HTPewPewOpts opts, MagickWand* wand) {
   // allocate space for the state, return the pointer
-  struct pixelator_state* state;
+  PixelatorState* state;
   state = malloc( sizeof(*state) );
   // set default values
   state->x = -1;
@@ -14,14 +14,14 @@ struct pixelator_state* pixelator_init(struct htpewpew_opts opts, MagickWand* wa
   return(state);
 }
 
-struct pixel* get_next_pixel(struct pixelator_state* state) {
+Pixel* get_next_pixel(PixelatorState* state) {
   // allocate space for the pixel, return the pointer
   size_t width;
   short x = state->x + 1;
   double hue, sat, light_d;
   unsigned char darkness;
   PixelWand** pwand;
-  struct pixel* px;
+  Pixel* px;
   px = malloc( sizeof(*px) );
   // check that PixelIterator is valid
   if (state->it == NULL)

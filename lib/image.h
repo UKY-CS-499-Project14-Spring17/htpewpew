@@ -13,7 +13,7 @@ void resize_image(MagickWand** wand);
 void greyscale_image(MagickWand** wand);
 void threshold_image(MagickWand** wand, Quantum threshold);
 
-MagickWand* prepare_image(struct htpewpew_opts opts);
+MagickWand* prepare_image(HTPewPewOpts opts);
 int cleanup_image(MagickWand* wand);
 
 #endif
