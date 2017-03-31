@@ -3,7 +3,7 @@
 magick_libs = $(shell pkg-config --cflags --libs MagickWand)
 gcc_opts = -Wall
 # list of all files to be cleaned
-objs = image.o cli.o pixelator.o
+objs = image.o cli.o pixelator.o streamer.o
 clean_files = $(objs) htpewpew debug
 
 htpewpew: $(objs) main.c
@@ -22,6 +22,10 @@ image.o: image.c image.h
 pixelator.o: pixelator.c pixelator.h
 	@echo "gcc $(gcc_opts) -c pixelator.c -o pixelator.o"
 	@gcc $(gcc_opts) -c pixelator.c -o pixelator.o $(magick_libs)
+
+streamer.o: streamer.c streamer.h
+	@echo "gcc $(gcc_opts) -c streamer.c -o streamer.o"
+	@gcc $(gcc_opts) -c streamer.c -o streamer.o $(magick_libs)
 
 cli.o: cli.c cli.h
 	gcc $(gcc_opts) -c cli.c -o cli.o
