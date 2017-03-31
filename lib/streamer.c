@@ -28,14 +28,32 @@ void send_pixel_command( PixelatorState *pixelator, uint8_t command, Pixel *pixe
   free( pixel_command_buffer );
 }
 
-uint8_t get_next_pixel_count( uint8_t previous_pixel_count ){
+uint8_t get_next_pixel_count( PixelatorState *pixelator, uint8_t previous_pixel_count ){
   uint8_t next_pixel_count = 0;
   if( previous_pixel_count == MAX_PIXEL_COUNTER_BW ){
+
+    uint8_t readbuffer[7];
+    read( pixelator->carver_handle, readbuffer, 7);
+    fnote( "Carver sent back (this probably isn't formatted correctly): %s", readbuffer );
+
     next_pixel_count = MIN_PIXEL_COUNTER_BW;
-  } else if( previous_pixel_count > MAX_PIXEL_COUNTER_BW || previous_pixel_count < MIN_PIXEL_COUNTER_BW ){
-    ferr( "Pixel count out of bounds with value %02x. Something went wrong.", previous_pixel_count );
-  } else {
+
+  } else if( previous_pixel_count == HALF_PIXEL_COUNTER_BW ){
+
+    uint8_t readbuffer[7];
+    read( pixelator->carver_handle, readbuffer, 7);
+    fnote( "Carver sent back (this probably isn't formatted correctly): %s", readbuffer );
+
     next_pixel_count = previous_pixel_count + 1;
+
+  } else if( previous_pixel_count > MAX_PIXEL_COUNTER_BW || previous_pixel_count < MIN_PIXEL_COUNTER_BW ){
+
+    ferr( "Pixel count out of bounds with value %02x. Something went wrong.", previous_pixel_count );
+
+  } else {
+
+    next_pixel_count = previous_pixel_count + 1;
+
   }
 
   return next_pixel_count;
@@ -106,7 +124,7 @@ uint8_t carve_image(PixelatorState *pixelator, Pixel *first_pixel){
 
     // Store this value for the finalization command
     previous_counter = pixel_counter;
-    pixel_counter    = get_next_pixel_count( pixel_counter );
+    pixel_counter    = get_next_pixel_count( pixelator, pixel_counter );
 
   }while( current_pixel != NULL );
 
