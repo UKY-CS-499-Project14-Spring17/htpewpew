@@ -3,7 +3,10 @@
 
 void stream(PixelatorState *pixelator){
   initialize_carver(pixelator);
+   
+  uint8_t last_pixel_counter = carve_image(pixelator);
 
+  finalize_carving( pixelator, last_pixel_counter );
 }
 
 void send_pixel_command( uint8_t command, Pixel *pixel, uint8_t aux_code ){
@@ -59,7 +62,9 @@ void initialize_carver(PixelatorState *pixelator){
   // Initialize carving
   command_buffer = { INIT_CMD, 0x01, 0x01, 0x00, 0x00, 0x00, 0xff }; 
   send_command( command_buffer );
+}
 
+uint8_t carve_image(PixelatorState *pixelator){
   uint8_t pixel_counter    = 0x3d;
   uint8_t previous_counter = 0x3d;
 
@@ -75,6 +80,11 @@ void initialize_carver(PixelatorState *pixelator){
 
   }while( current_pixel != NULL );
 
+  // Return this value for the finalization command
+  return previous_counter;
+}
+
+void finalize_carving( PixelatorState *pixelator, uint8_t final_counter_value ){
   // Finalization command repeats the previous counter, but replaces
   // coordinate and aux value with 0x9
   command_buffer = { previous_counter, 0x9, 0x9, 0x9, 0x9, 0x9, 0xff };
