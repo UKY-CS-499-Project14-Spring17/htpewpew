@@ -13,9 +13,18 @@ void stream(PixelatorState *pixelator){
 void send_pixel_command( PixelatorState *pixelator, uint8_t command, Pixel *pixel, uint8_t aux_code ){
   // TODO carve command counter
   // Do something about grayscale here
-  char *pixel_command_buffer = (char *) malloc( COMMAND_SIZE * sizeof pixel_command_buffer );
-  pixel_command_buffer = { command, pixel->x/MAX_LOWER_BYTE, pixel->x%MAX_LOWER_BYTE, pixel->y/MAX_LOWER_BYTE, pixel->y%MAX_LOWER_BYTE, aux_code, 0xff }; 
+  uint8_t *pixel_command_buffer = (uint8_t *) malloc( COMMAND_SIZE * sizeof pixel_command_buffer );
+
+  pixel_command_buffer[0] = command;
+  pixel_command_buffer[1] = pixel->x/MAX_LOWER_BYTE;
+  pixel_command_buffer[2] = pixel->x%MAX_LOWER_BYTE;
+  pixel_command_buffer[3] = pixel->y/MAX_LOWER_BYTE;
+  pixel_command_buffer[4] = pixel->y%MAX_LOWER_BYTE;
+  pixel_command_buffer[5] = aux_code;
+  pixel_command_buffer[6] = 0xff;
+
   send_command( pixelator, pixel_command_buffer);
+
   free( pixel_command_buffer );
 }
 
@@ -40,7 +49,7 @@ Pixel *initialize_carver(PixelatorState *pixelator){
     ferr( "Error setting image size. Top left: %sfound, bottom right: %sfound\n", top_left == NULL ? "not " : "", bottom_right == NULL ? "not " : "" );
   }
 
-  char *command_buffer = (char *) malloc( COMMAND_SIZE * sizeof command_buffer );
+  uint8_t *command_buffer = (uint8_t *) malloc( COMMAND_SIZE * sizeof command_buffer );
 
   // Send top left border command
   send_pixel_command( pixelator, SET_BORDER_CMD, top_left, 0x00 );
@@ -49,7 +58,14 @@ Pixel *initialize_carver(PixelatorState *pixelator){
   send_pixel_command( pixelator, SET_BORDER_CMD, bottom_right, 0x01 );
 
   // Send draw border box command
-  command_buffer = { DRAW_BOX_CMD, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff }; 
+  command_buffer[0] = DRAW_BOX_CMD;
+  command_buffer[1] = 0x00;
+  command_buffer[2] = 0x00;
+  command_buffer[3] = 0x00;
+  command_buffer[4] = 0x00;
+  command_buffer[5] = 0x00;
+  command_buffer[6] = 0xff;
+
   send_command( pixelator, command_buffer );
 
   // Get the first pixel
@@ -61,8 +77,17 @@ Pixel *initialize_carver(PixelatorState *pixelator){
   send_pixel_command( pixelator, GOTO_CMD, first_pixel, 0x00 );
 
   // Initialize carving
-  command_buffer = { INIT_CMD, 0x01, 0x01, 0x00, 0x00, 0x00, 0xff }; 
+  command_buffer[0] = INIT_CMD;
+  command_buffer[1] = 0x01;
+  command_buffer[2] = 0x01;
+  command_buffer[3] = 0x00;
+  command_buffer[4] = 0x00;
+  command_buffer[5] = 0x00;
+  command_buffer[6] = 0xff;
+
   send_command( pixelator, command_buffer );
+
+  free( command_buffer );
 
   return first_pixel;
 }
@@ -92,12 +117,22 @@ uint8_t carve_image(PixelatorState *pixelator, Pixel *first_pixel){
 void finalize_carving( PixelatorState *pixelator, uint8_t final_counter_value ){
   // Finalization command repeats the previous counter, but replaces
   // coordinate and aux value with 0x9
-  command_buffer = { previous_counter, 0x9, 0x9, 0x9, 0x9, 0x9, 0xff };
+  uint8_t *command_buffer = (uint8_t *) malloc( COMMAND_SIZE * sizeof command_buffer );
+
+  command_buffer[0] = final_counter_value;
+  command_buffer[1] = 0x9;
+  command_buffer[2] = 0x9;
+  command_buffer[3] = 0x9;
+  command_buffer[4] = 0x9;
+  command_buffer[5] = 0x9;
+  command_buffer[6] = 0xff;
+
   send_command( pixelator, command_buffer );
+  free( command_buffer );
 }
 
 int initialize_serial_port() {
-  int fd,c, res;
+  int fd;
   struct termios oldtio,newtio;
 
   fd = open(MODEMDEVICE, O_RDWR | O_NOCTTY ); 
