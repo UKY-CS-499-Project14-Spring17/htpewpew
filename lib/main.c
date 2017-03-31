@@ -2,6 +2,7 @@
 #include "image.h"
 #include "pixelator.h"
 #include "options.h"
+#include "streamer.h"
 #include <argp.h>
 
 // This file taken and modified from [http://www.crasseux.com/books/ctutorial/argp-example.html]
@@ -163,10 +164,9 @@ int main (int argc, char **argv)
   } else {
     MagickWand* wand = prepare_image(options);
     struct pixelator_state* state = pixelator_init(options,wand);
-    struct pixel* px;
-    while( (px = get_next_pixel(state)) != NULL ) {
-      free(px);
-    }
+
+    stream( pixelator_state );
+
     cleanup_image(wand);
   }
 
