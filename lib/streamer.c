@@ -3,9 +3,9 @@
 void stream(PixelatorState *pixelator){
   pixelator->carver_handle = initialize_serial_port();
 
-  initialize_carver(pixelator);
+  Pixel *first_pixel = initialize_carver(pixelator);
    
-  uint8_t last_pixel_counter = carve_image(pixelator);
+  uint8_t last_pixel_counter = carve_image(pixelator, first_pixel);
 
   finalize_carving( pixelator, last_pixel_counter );
 }
@@ -32,7 +32,7 @@ uint8_t get_next_pixel_count( uint8_t previous_pixel_count ){
   return next_pixel_count;
 }
 
-void initialize_carver(PixelatorState *pixelator){
+Pixel *initialize_carver(PixelatorState *pixelator){
   Pixel *top_left     = get_top_left_pixel(pixelator);
   Pixel *bottom_right = get_bottom_right_pixel(pixelator);
 
@@ -53,23 +53,25 @@ void initialize_carver(PixelatorState *pixelator){
   send_command( pixelator, command_buffer );
 
   // Get the first pixel
-  Pixel *current_pixel = get_next_pixel( pixelator );
-  if( current_pixel == NULL ){
+  Pixel *first_pixel = get_next_pixel( pixelator );
+  if( first_pixel == NULL ){
     ferr( "Unable to retrieve first pixel information" );
   }
 
-  send_pixel_command( pixelator, GOTO_CMD, current_pixel, 0x00 );
+  send_pixel_command( pixelator, GOTO_CMD, first_pixel, 0x00 );
 
   // Initialize carving
   command_buffer = { INIT_CMD, 0x01, 0x01, 0x00, 0x00, 0x00, 0xff }; 
   send_command( pixelator, command_buffer );
 
-  free( command_buffer );
+  return first_pixel;
 }
 
-uint8_t carve_image(PixelatorState *pixelator){
+uint8_t carve_image(PixelatorState *pixelator, Pixel *first_pixel){
   uint8_t pixel_counter    = 0x3d;
   uint8_t previous_counter = 0x3d;
+
+  Pixel *current_pixel = first_pixel;
 
   do{
     // The counter loops through a range defined for carving commands
