@@ -17,13 +17,14 @@
 #define MODEMDEVICE "/dev/ttyUSB0"
 
 #define COMMAND_SIZE          7
+#define HANDSHAKE_CMD         0x1a
 #define SET_BORDER_CMD        0x1b
 #define DRAW_BOX_CMD          0x1c
 // TODO is this goto?
 #define GOTO_CMD              0x18
 #define INIT_CMD              0x15
 #define MAX_PIXEL_COUNTER_BW  0x78
-#define HALF_PIXEL_COUNTER_BW 0x78
+#define HALF_PIXEL_COUNTER_BW 0x5a
 #define MIN_PIXEL_COUNTER_BW  0x3d
 #define MAX_LOWER_BYTE        0xff
 

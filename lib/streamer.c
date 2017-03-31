@@ -32,16 +32,16 @@ uint8_t get_next_pixel_count( PixelatorState *pixelator, uint8_t previous_pixel_
   uint8_t next_pixel_count = 0;
   if( previous_pixel_count == MAX_PIXEL_COUNTER_BW ){
 
-    uint8_t readbuffer[7];
-    read( pixelator->carver_handle, readbuffer, 7);
+    uint8_t readbuffer[256];
+    read( pixelator->carver_handle, readbuffer, 256);
     fnote( "Carver sent back (this probably isn't formatted correctly): %s", readbuffer );
 
     next_pixel_count = MIN_PIXEL_COUNTER_BW;
 
   } else if( previous_pixel_count == HALF_PIXEL_COUNTER_BW ){
 
-    uint8_t readbuffer[7];
-    read( pixelator->carver_handle, readbuffer, 7);
+    uint8_t readbuffer[256];
+    read( pixelator->carver_handle, readbuffer, 256);
     fnote( "Carver sent back (this probably isn't formatted correctly): %s", readbuffer );
 
     next_pixel_count = previous_pixel_count + 1;
@@ -68,6 +68,21 @@ Pixel *initialize_carver(PixelatorState *pixelator){
   }
 
   uint8_t *command_buffer = (uint8_t *) malloc( COMMAND_SIZE * sizeof command_buffer );
+  
+  // Send draw border box command
+  command_buffer[0] = HANDSHAKE_CMD;
+  command_buffer[1] = 0x00;
+  command_buffer[2] = 0x00;
+  command_buffer[3] = 0x00;
+  command_buffer[4] = 0x00;
+  command_buffer[5] = 0x00;
+  command_buffer[6] = 0xff;
+
+  send_command( pixelator, command_buffer );
+
+  uint8_t readbuffer[256];
+  read( pixelator->carver_handle, readbuffer, 256);
+  fnote( "Carver sent back (this probably isn't formatted correctly): %s", readbuffer );
 
   // Send top left border command
   send_pixel_command( pixelator, SET_BORDER_CMD, top_left, 0x00 );
@@ -106,6 +121,9 @@ Pixel *initialize_carver(PixelatorState *pixelator){
   send_command( pixelator, command_buffer );
 
   free( command_buffer );
+
+  read( pixelator->carver_handle, readbuffer, 256);
+  fnote( "Carver sent back (this probably isn't formatted correctly): %s", readbuffer );
 
   return first_pixel;
 }
@@ -179,4 +197,5 @@ int initialize_serial_port() {
 
 void send_command( PixelatorState *pixelator, uint8_t *command_buffer){
   write( pixelator->carver_handle, command_buffer, COMMAND_SIZE);
+  sleep(0.1);
 }
