@@ -1,1 +1,1 @@
-syn keyword Type Pixel PixelatorState MagickWand PixelIterator
+syn keyword Type Pixel PixelatorState MagickWand PixelIterator HTPewPewOpts

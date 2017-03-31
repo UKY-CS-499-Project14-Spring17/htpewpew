@@ -16,7 +16,7 @@ typedef struct pixelator_state
   // 0 = horizontal
   // 1 = vertical
   unsigned char scan_dir; 
-}PixelatorState;
+} PixelatorState;
 
 typedef struct pixel
 {
@@ -25,11 +25,11 @@ typedef struct pixel
   short y;
   // value cannot exceed 255
   unsigned char intensity;
-}Pixel;
+} Pixel;
 
-struct pixelator_state* pixelator_init(struct htpewpew_opts opts, MagickWand* wand);
-struct pixel* get_top_left_pixel(struct pixelator_state* state);
-struct pixel* get_bottom_right_pixel(struct pixelator_state* state);
-struct pixel* get_next_pixel(struct pixelator_state* state);
+PixelatorState* pixelator_init(HTPewPewOpts opts, MagickWand* wand);
+Pixel* get_top_left_pixel(PixelatorState* state);
+Pixel* get_bottom_right_pixel(PixelatorState* state);
+Pixel* get_next_pixel(PixelatorState* state);
 
 #endif

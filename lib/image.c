@@ -86,7 +86,7 @@ void threshold_image(MagickWand** wand, Quantum threshold)
 // side effects:
 //    wand image created, file changed and output
 //    TODO: add options for threshold/greyscale and image dry-run
-MagickWand* prepare_image(struct htpewpew_opts opts)
+MagickWand* prepare_image(HTPewPewOpts opts)
 {
   MagickBooleanType status;
   MagickWand* magick_wand;

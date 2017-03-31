@@ -50,7 +50,7 @@ static error_t parse_verbose (int key, char *arg, struct argp_state *state) // s
 
 static error_t parse_opt (int key, char *arg, struct argp_state *state) // check the other flags
 {
-  struct htpewpew_opts *a = state->input;
+  HTPewPewOpts *a = state->input;
 
   switch (key)
     {
@@ -141,7 +141,7 @@ static struct argp verbose = {options, parse_verbose, args_doc, doc};
 */
 int main (int argc, char **argv)
 {
-  struct htpewpew_opts options;
+  HTPewPewOpts options;
 
   /* Set argument defaults */
   options.burn      = 60; // TODO
@@ -163,7 +163,8 @@ int main (int argc, char **argv)
     return 1;
   } else {
     MagickWand* wand = prepare_image(options);
-    struct pixelator_state* state = pixelator_init(options,wand);
+
+    PixelatorState *pixelator_state = pixelator_init(options,wand);
 
     stream( pixelator_state );
 
