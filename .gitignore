@@ -1,5 +1,6 @@
 # ignore the executable, in case that get's generated
 lib/htpewpew
+lib/debug
 
 # ignore object files that are generated
 *.o
