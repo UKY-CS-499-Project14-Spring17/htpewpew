@@ -16,6 +16,7 @@ typedef struct pixelator_state
   // 0 = horizontal
   // 1 = vertical
   unsigned char scan_dir; 
+  int carver_handle; 
 } PixelatorState;
 
 typedef struct pixel

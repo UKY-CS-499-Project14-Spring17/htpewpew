@@ -1,7 +1,8 @@
-#include "options.h"
-#include "image.h"
+#include "streamer.h"
 
 void stream(PixelatorState *pixelator){
+  pixelator->carver_handle = initialize_serial_port();
+
   initialize_carver(pixelator);
    
   uint8_t last_pixel_counter = carve_image(pixelator);
@@ -9,12 +10,12 @@ void stream(PixelatorState *pixelator){
   finalize_carving( pixelator, last_pixel_counter );
 }
 
-void send_pixel_command( uint8_t command, Pixel *pixel, uint8_t aux_code ){
+void send_pixel_command( PixelatorState *pixelator, uint8_t command, Pixel *pixel, uint8_t aux_code ){
   // TODO carve command counter
   // Do something about grayscale here
   char *pixel_command_buffer = (char *) malloc( COMMAND_SIZE * sizeof pixel_command_buffer );
   pixel_command_buffer = { command, pixel->x/MAX_LOWER_BYTE, pixel->x%MAX_LOWER_BYTE, pixel->y/MAX_LOWER_BYTE, pixel->y%MAX_LOWER_BYTE, aux_code, 0xff }; 
-  send_command(pixel_command_buffer);
+  send_command( pixelator, pixel_command_buffer);
   free( pixel_command_buffer );
 }
 
@@ -42,14 +43,14 @@ void initialize_carver(PixelatorState *pixelator){
   char *command_buffer = (char *) malloc( COMMAND_SIZE * sizeof command_buffer );
 
   // Send top left border command
-  send_pixel_command( SET_BORDER_CMD, top_left, 0x00 );
+  send_pixel_command( pixelator, SET_BORDER_CMD, top_left, 0x00 );
 
   // Send bottom right border command
-  send_pixel_command( SET_BORDER_CMD, top_left, 0x01 );
+  send_pixel_command( pixelator, SET_BORDER_CMD, bottom_right, 0x01 );
 
   // Send draw border box command
   command_buffer = { DRAW_BOX_CMD, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff }; 
-  send_command( command_buffer );
+  send_command( pixelator, command_buffer );
 
   // Get the first pixel
   Pixel *current_pixel = get_next_pixel( pixelator );
@@ -57,11 +58,13 @@ void initialize_carver(PixelatorState *pixelator){
     ferr( "Unable to retrieve first pixel information" );
   }
 
-  send_pixel_command( GOTO_CMD, current_pixel, 0x00 );
+  send_pixel_command( pixelator, GOTO_CMD, current_pixel, 0x00 );
 
   // Initialize carving
   command_buffer = { INIT_CMD, 0x01, 0x01, 0x00, 0x00, 0x00, 0xff }; 
-  send_command( command_buffer );
+  send_command( pixelator, command_buffer );
+
+  free( command_buffer );
 }
 
 uint8_t carve_image(PixelatorState *pixelator){
@@ -70,7 +73,7 @@ uint8_t carve_image(PixelatorState *pixelator){
 
   do{
     // The counter loops through a range defined for carving commands
-    send_pixel_command( pixel_counter, current_pixel, 0x00 );
+    send_pixel_command( pixelator, pixel_counter, current_pixel, 0x00 );
 
     current_pixel    = get_next_pixel( pixelator );
 
@@ -88,5 +91,37 @@ void finalize_carving( PixelatorState *pixelator, uint8_t final_counter_value ){
   // Finalization command repeats the previous counter, but replaces
   // coordinate and aux value with 0x9
   command_buffer = { previous_counter, 0x9, 0x9, 0x9, 0x9, 0x9, 0xff };
-  send_command( command_buffer );
+  send_command( pixelator, command_buffer );
+}
+
+int initialize_serial_port() {
+  int fd,c, res;
+  struct termios oldtio,newtio;
+
+  fd = open(MODEMDEVICE, O_RDWR | O_NOCTTY ); 
+  if (fd <0) {perror(MODEMDEVICE); exit(-1); }
+
+  tcgetattr(fd,&oldtio); /* save current port settings */
+
+  bzero(&newtio, sizeof(newtio));
+  newtio.c_cflag = BAUDRATE | CS8 | CLOCAL | CREAD;
+  newtio.c_iflag = IGNPAR;
+  newtio.c_oflag = 0;
+
+  /* set input mode (non-canonical, no echo,...) */
+  newtio.c_lflag = 0;
+
+  newtio.c_cc[VTIME]    = 0;   /* inter-character timer unused */
+  newtio.c_cc[VMIN]     = 4;   /* blocking read until 4 chars received */
+
+  tcflush(fd, TCIFLUSH);
+  tcsetattr(fd,TCSANOW,&newtio);
+
+  sleep(2);
+
+  return fd;
+}
+
+void send_command( PixelatorState *pixelator, uint8_t *command_buffer){
+  write( pixelator->carver_handle, command_buffer, COMMAND_SIZE);
 }
