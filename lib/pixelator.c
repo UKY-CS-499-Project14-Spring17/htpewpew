@@ -1,5 +1,16 @@
 #include "pixelator.h"
 
+unsigned char get_pixel_intensity(PixelWand* pixel) {
+  double hue, sat, light_d;
+  unsigned char darkness;
+  // for each x value, move through each pixel
+  PixelGetHSL(pixel, &hue, &sat, &light_d);
+  // 255 is the max burn intensity
+  // 0 is no burn
+  darkness = (char) (255 - (255 * light_d));
+  return(darkness);
+}
+
 PixelatorState* pixelator_init(HTPewPewOpts opts, MagickWand* wand) {
   // allocate space for the state, return the pointer
   PixelatorState* state;
@@ -16,20 +27,61 @@ PixelatorState* pixelator_init(HTPewPewOpts opts, MagickWand* wand) {
 }
 
 Pixel* get_top_left_pixel(PixelatorState* state) {
+  PixelIterator* it = NewPixelIterator(state->wand);
+  PixelWand** pwand;
+  size_t width;
+  unsigned char darkness;
   if( state->px == NULL )
     state->px = malloc( sizeof(*(state->px)) );
   state->px->x = 0;
   state->px->y = 0;
   state->px->intensity = 0;
+  // collect the first row with a non-white pixel
+  pwand = PixelGetCurrentIteratorRow(it, &width);
+  while( pwand != NULL ) {
+    for( short x = 0; x < width; x++ ) {
+      // for each x value, move through each pixel
+      darkness = get_pixel_intensity(pwand[x]);
+      if( darkness != 0 )
+        break;
+    }
+    // move to the next row
+    pwand = PixelGetNextIteratorRow(state->it, &width);
+    PixelSyncIterator(state->it);
+    // drop to the next row
+    state->px->y += 1;
+  }
   return(state->px);
 }
 
 Pixel* get_bottom_right_pixel(PixelatorState* state) {
+  PixelIterator* it = NewPixelIterator(state->wand);
+  PixelWand** pwand;
+  size_t width;
+  // Jump to the end and head up from there
+  PixelSetLastIteratorRow(it);
+  PixelSyncIterator(it);
+  unsigned char darkness;
   if( state->px == NULL )
     state->px = malloc( sizeof(*(state->px)) );
   state->px->x = 0x459;
   state->px->y = 0x459;
   state->px->intensity = 0;
+  // collect the first row with a non-white pixel
+  pwand = PixelGetCurrentIteratorRow(it, &width);
+  while( pwand != NULL ) {
+    for( short x = 0 ; x < width; x++ ) {
+      // for each x value, move through each pixel
+      darkness = get_pixel_intensity(pwand[x]);
+      if( darkness != 0 )
+        break;
+    }
+    // move to the next row
+    pwand = PixelGetPreviousIteratorRow(state->it, &width);
+    PixelSyncIterator(state->it);
+    // drop to the next row
+    state->px->y -= 1;
+  }
   return(state->px);
 }
 
@@ -37,7 +89,6 @@ Pixel* get_next_pixel(PixelatorState* state) {
   // allocate space for the pixel, return the pointer
   size_t width;
   short x = state->x + 1;
-  double hue, sat, light_d;
   unsigned char darkness;
   PixelWand** pwand;
   if( state->px == NULL )
@@ -49,10 +100,9 @@ Pixel* get_next_pixel(PixelatorState* state) {
   while( pwand != NULL ) {
     for( /* do not initialize x */ ; x < width; x++ ) {
       // for each x value, move through each pixel
-      PixelGetHSL(pwand[x], &hue, &sat, &light_d);
+      darkness = get_pixel_intensity(pwand[x]);
       // 255 is the max burn intensity
       // 0 is no burn
-      darkness = (char) (255 - (255 * light_d));
       if( darkness != 0 ) {
         state->x = x;
         fnote("y=%d x=%d i=%d\n",state->y, state->x, darkness);

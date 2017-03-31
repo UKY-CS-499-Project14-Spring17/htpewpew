@@ -29,6 +29,8 @@ typedef struct pixelator_state
   int carver_handle; 
 } PixelatorState;
 
+unsigned char get_pixel_intensity(PixelWand* pixel);
+
 PixelatorState* pixelator_init(HTPewPewOpts opts, MagickWand* wand);
 Pixel* get_top_left_pixel(PixelatorState* state);
 Pixel* get_bottom_right_pixel(PixelatorState* state);
