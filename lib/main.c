@@ -166,7 +166,7 @@ int main (int argc, char **argv)
 
     PixelatorState *pixelator_state = pixelator_init(options,wand);
 
-    stream( pixelator_state );
+    stream(pixelator_state, options);
 
     cleanup_image(wand);
   }
