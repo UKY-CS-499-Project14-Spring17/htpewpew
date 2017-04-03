@@ -16,19 +16,19 @@ debug: $(objs) main.c
 
 # don't print the magick_libs garbage, please use this as a template
 image.o: image.c image.h
-	@echo "gcc $(gcc_opts) -c image.c -o image.o"
-	@gcc $(gcc_opts) -c image.c -o image.o $(magick_libs)
+	@echo "gcc $(gcc_opts) -g -c image.c -o image.o"
+	@gcc $(gcc_opts) -g -c image.c -o image.o $(magick_libs)
 
 pixelator.o: pixelator.c pixelator.h
-	@echo "gcc $(gcc_opts) -c pixelator.c -o pixelator.o"
-	@gcc $(gcc_opts) -c pixelator.c -o pixelator.o $(magick_libs)
+	@echo "gcc $(gcc_opts) -g -c pixelator.c -o pixelator.o"
+	@gcc $(gcc_opts) -g -c pixelator.c -o pixelator.o $(magick_libs)
 
 streamer.o: streamer.c streamer.h
-	@echo "gcc $(gcc_opts) -c streamer.c -o streamer.o"
-	@gcc $(gcc_opts) -c streamer.c -o streamer.o $(magick_libs)
+	@echo "gcc $(gcc_opts) -g -c streamer.c -o streamer.o"
+	@gcc $(gcc_opts) -g -c streamer.c -o streamer.o $(magick_libs)
 
 cli.o: cli.c cli.h
-	gcc $(gcc_opts) -c cli.c -o cli.o
+	gcc $(gcc_opts) -g -c cli.c -o cli.o
 
 clean:
 	rm -f $(clean_files)
