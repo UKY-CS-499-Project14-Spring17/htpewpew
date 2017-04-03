@@ -27,6 +27,7 @@ typedef struct pixelator_state
   // 1 = vertical
   unsigned char scan_dir; 
   int carver_handle; 
+  uint8_t *read_buffer; 
 } PixelatorState;
 
 unsigned char get_pixel_intensity(PixelWand* pixel);

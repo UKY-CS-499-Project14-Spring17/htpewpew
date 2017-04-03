@@ -2,12 +2,15 @@
 
 void stream(PixelatorState *pixelator, HTPewPewOpts options){
   pixelator->carver_handle = initialize_serial_port(options);
+  pixelator->readbuffer    = (uint8_t *) malloc( READ_BUFFER_SIZE * sizeof pixelator->readbuffer );
 
   Pixel *first_pixel = initialize_carver(pixelator);
    
   uint8_t last_pixel_counter = carve_image(pixelator, first_pixel);
 
   finalize_carving( pixelator, last_pixel_counter );
+
+  free(pixelator->readbuffer);
 }
 
 void send_pixel_command( PixelatorState *pixelator, uint8_t command, Pixel *pixel, uint8_t aux_code ){
@@ -32,17 +35,11 @@ uint8_t get_next_pixel_count( PixelatorState *pixelator, uint8_t previous_pixel_
   uint8_t next_pixel_count = 0;
   if( previous_pixel_count == MAX_PIXEL_COUNTER_BW ){
 
-    uint8_t readbuffer[256];
-    read( pixelator->carver_handle, readbuffer, 256);
-    fnote( "Carver sent back (this probably isn't formatted correctly): %s", readbuffer );
-
     next_pixel_count = MIN_PIXEL_COUNTER_BW;
 
   } else if( previous_pixel_count == HALF_PIXEL_COUNTER_BW ){
 
-    uint8_t readbuffer[256];
-    read( pixelator->carver_handle, readbuffer, 256);
-    fnote( "Carver sent back (this probably isn't formatted correctly): %s", readbuffer );
+    wait_for_carver_response( pixelator );
 
     next_pixel_count = previous_pixel_count + 1;
 
@@ -80,9 +77,7 @@ Pixel *initialize_carver(PixelatorState *pixelator){
 
   send_command( pixelator, command_buffer );
 
-  uint8_t readbuffer[256];
-  read( pixelator->carver_handle, readbuffer, 256);
-  fnote( "Carver sent back (this probably isn't formatted correctly): %s", readbuffer );
+  wait_for_carver_response( pixelator );
 
   // Send top left border command
   send_pixel_command( pixelator, SET_BORDER_CMD, top_left, 0x00 );
@@ -122,8 +117,7 @@ Pixel *initialize_carver(PixelatorState *pixelator){
 
   free( command_buffer );
 
-  read( pixelator->carver_handle, readbuffer, 256);
-  fnote( "Carver sent back (this probably isn't formatted correctly): %s", readbuffer );
+  wait_for_carver_response( pixelator );
 
   return first_pixel;
 }
@@ -202,4 +196,13 @@ int initialize_serial_port( HTPewPewOpts options) {
 void send_command( PixelatorState *pixelator, uint8_t *command_buffer){
   write( pixelator->carver_handle, command_buffer, COMMAND_SIZE);
   usleep(100000);
+}
+
+void wait_for_carver_response( PixelatorState *pixelator ){
+    if( read(pixelator->carver_handle, pixelato->readbuffer, READ_BUFFER_SIZE) == -1 ){
+      ferr("Failed to read from carver");
+      exit(-1);
+    } else {
+      fnote( "Carver sent back (this probably isn't formatted correctly): %x", pixelato->readbuffer );
+    }
 }
