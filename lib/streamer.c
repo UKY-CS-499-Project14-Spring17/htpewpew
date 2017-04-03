@@ -57,12 +57,6 @@ uint8_t get_next_pixel_count( PixelatorState *pixelator, uint8_t previous_pixel_
 }
 
 Pixel *initialize_carver(PixelatorState *pixelator){
-  Pixel *top_left     = get_top_left_pixel(pixelator);
-  Pixel *bottom_right = get_bottom_right_pixel(pixelator);
-
-  if( top_left == NULL || bottom_right == NULL ){
-    ferr( "Error setting image size. Top left: %sfound, bottom right: %sfound\n", top_left == NULL ? "not " : "", bottom_right == NULL ? "not " : "" );
-  }
 
   uint8_t *command_buffer = (uint8_t *) malloc( COMMAND_SIZE * sizeof command_buffer );
   
@@ -91,9 +85,21 @@ Pixel *initialize_carver(PixelatorState *pixelator){
   send_command( pixelator, command_buffer );
 
   // Send top left border command
+  Pixel *top_left = get_top_left_pixel(pixelator);
+  if( top_left == NULL ){
+    ferr( "Error setting image size. Top left corner not found" );
+    exit(-1);
+  }
+
   send_pixel_command( pixelator, SET_BORDER_CMD, top_left, 0x00 );
 
   // Send bottom right border command
+  Pixel *bottom_right = get_bottom_right_pixel(pixelator);
+  if( bottom_right == NULL ){
+    ferr( "Error setting image size. Bottom right corner not found" );
+    exit(-1);
+  }
+
   send_pixel_command( pixelator, SET_BORDER_CMD, bottom_right, 0x01 );
 
   // Send draw border box command
