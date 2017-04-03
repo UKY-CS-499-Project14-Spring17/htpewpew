@@ -34,7 +34,8 @@ void send_pixel_command( PixelatorState *pixelator, uint8_t command, Pixel *pixe
 uint8_t get_next_pixel_count( PixelatorState *pixelator, uint8_t previous_pixel_count ){
   uint8_t next_pixel_count = 0;
   if( previous_pixel_count == MAX_PIXEL_COUNTER_BW ){
-
+    wait_for_carver_response( pixelator );
+    
     next_pixel_count = MIN_PIXEL_COUNTER_BW;
 
   } else if( previous_pixel_count == HALF_PIXEL_COUNTER_BW ){
