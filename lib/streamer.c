@@ -210,10 +210,10 @@ void send_command( PixelatorState *pixelator, uint8_t *command_buffer){
 }
 
 void wait_for_carver_response( PixelatorState *pixelator ){
-    if( read(pixelator->carver_handle, pixelato->readbuffer, READ_BUFFER_SIZE) == -1 ){
+    if( read(pixelator->carver_handle, pixelator->readbuffer, READ_BUFFER_SIZE) == -1 ){
       ferr("Failed to read from carver");
       exit(-1);
     } else {
-      fnote( "Carver sent back (this probably isn't formatted correctly): %x", pixelato->readbuffer );
+      fnote( "Carver sent back (this probably isn't formatted correctly): %x", pixelator->readbuffer );
     }
 }

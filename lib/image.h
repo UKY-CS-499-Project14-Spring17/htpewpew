@@ -10,6 +10,7 @@
 void throw_wand_exception(MagickWand* wand);
 
 void resize_image(MagickWand** wand);
+void antialias_image(MagickWand** wand);
 void greyscale_image(MagickWand** wand);
 void threshold_image(MagickWand** wand, Quantum threshold);
 

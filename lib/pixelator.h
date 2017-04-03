@@ -2,6 +2,7 @@
 #define PIXELATOR_H
 
 #include "image.h"
+#include <stdint.h>
 
 typedef struct pixel
 {
@@ -27,7 +28,7 @@ typedef struct pixelator_state
   // 1 = vertical
   unsigned char scan_dir; 
   int carver_handle; 
-  uint8_t *read_buffer; 
+  uint8_t *readbuffer; 
 } PixelatorState;
 
 unsigned char get_pixel_intensity(PixelWand* pixel);

@@ -45,6 +45,21 @@ void resize_image(MagickWand** wand)
   // alter compact size
 }
 
+// antialias_image
+// inputs:
+//    wand -- MagickWand** -- passed by reference
+// outputs:
+//    void
+// side effects:
+//    wand image is antialiased
+//    TODO: is this the best way to do this?
+void antialias_image(MagickWand** wand)
+{
+  MagickBooleanType status = MagickBlurImage(*wand, 0.0, 0.5);
+  if (status == MagickFalse)
+    throw_wand_exception(*wand);
+}
+
 // greyscale_image
 // inputs:
 //    wand -- MagickWand** -- passed by reference
@@ -104,6 +119,8 @@ MagickWand* prepare_image(HTPewPewOpts opts)
     throw_wand_exception(magick_wand);
   fnote("Resizing Image\n");
   resize_image(&magick_wand);
+  fnote("Antialiasing Image\n");
+  antialias_image(&magick_wand);
   if (opts.threshold == -1) { // skip threshold
     fnote("Converting to greyscale\n");
     greyscale_image(&magick_wand);
