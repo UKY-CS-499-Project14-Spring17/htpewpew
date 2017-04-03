@@ -4,6 +4,8 @@
 #include "image.h"
 #include <stdint.h>
 
+#define CANVAS_SIZE 1113
+
 typedef struct pixel
 {
   // x & y should never exceed 1300 (0x0500)
@@ -31,6 +33,7 @@ typedef struct pixelator_state
   uint8_t *readbuffer; 
 } PixelatorState;
 
+void center_pixel(PixelatorState* state);
 unsigned char get_pixel_intensity(PixelWand* pixel);
 
 PixelatorState* pixelator_init(HTPewPewOpts opts, MagickWand* wand);
