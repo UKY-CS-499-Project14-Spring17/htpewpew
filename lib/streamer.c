@@ -197,5 +197,5 @@ int initialize_serial_port() {
 
 void send_command( PixelatorState *pixelator, uint8_t *command_buffer){
   write( pixelator->carver_handle, command_buffer, COMMAND_SIZE);
-  sleep(0.1);
+  usleep(100000);
 }
