@@ -1,7 +1,7 @@
 #include "streamer.h"
 
-void stream(PixelatorState *pixelator){
-  pixelator->carver_handle = initialize_serial_port();
+void stream(PixelatorState *pixelator, HTPewPewOpts options){
+  pixelator->carver_handle = initialize_serial_port(options);
 
   Pixel *first_pixel = initialize_carver(pixelator);
    
@@ -167,12 +167,16 @@ void finalize_carving( PixelatorState *pixelator, uint8_t final_counter_value ){
   free( command_buffer );
 }
 
-int initialize_serial_port() {
+int initialize_serial_port( HTPewPewOpts options) {
   int fd;
   struct termios oldtio,newtio;
-
-  fd = open(MODEMDEVICE, O_RDWR | O_NOCTTY ); 
-  if (fd <0) {perror(MODEMDEVICE); exit(-1); }
+  if(options.port == NULL) {
+    fd = open(MODEMDEVICE, O_RDWR | O_NOCTTY ); 
+    if (fd <0) {perror(MODEMDEVICE); exit(-1); }
+  } else {
+    fd = open(options.port, O_RDWR | O_NOCTTY ); 
+    if (fd <0) {perror(MODEMDEVICE); exit(-1); }
+  }
 
   tcgetattr(fd,&oldtio); /* save current port settings */
 

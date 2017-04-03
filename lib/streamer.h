@@ -28,13 +28,13 @@
 #define MIN_PIXEL_COUNTER_BW  0x3d
 #define MAX_LOWER_BYTE        0xff
 
-void    stream                 ( PixelatorState *pixelator                                                  );
+void    stream                 ( PixelatorState *pixelator, HTPewPewOpts options                            );
 void    send_pixel_command     ( PixelatorState *pixelator, uint8_t command, Pixel *pixel, uint8_t aux_code );
 uint8_t get_next_pixel_count   ( PixelatorState *pixelator, uint8_t previous_pixel_count                    );
 Pixel   *initialize_carver     ( PixelatorState *pixelator                                                  );
 uint8_t carve_image            ( PixelatorState *pixelator, Pixel *first_pixel                              );
 void    finalize_carving       ( PixelatorState *pixelator, uint8_t final_counter_value                     );
-int     initialize_serial_port (                                                                            );
+int     initialize_serial_port ( HTPewPewOpts    options                                                    );
 void    send_command           ( PixelatorState *pixelator, uint8_t *command_buffer                         );
 
 #endif

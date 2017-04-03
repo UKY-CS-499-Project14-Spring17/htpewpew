@@ -15,11 +15,12 @@ PixelatorState* pixelator_init(HTPewPewOpts opts, MagickWand* wand) {
   // allocate space for the state, return the pointer
   PixelatorState* state;
   state = malloc( sizeof(*state) );
+  state->it = NewPixelIterator(wand);
   // set default values
+  state->wand = wand;
   state->x = -1;
   state->y = 0;
   state->px = NULL;
-  state->it = NewPixelIterator(wand);
   state->scan_dir = 0;
   // TODO change scan direction
   // TODO the fuction
