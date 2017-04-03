@@ -79,6 +79,17 @@ Pixel *initialize_carver(PixelatorState *pixelator){
 
   wait_for_carver_response( pixelator );
 
+  // Send draw border box command
+  command_buffer[0] = LASER_INTENSITY_CMD;
+  command_buffer[1] = 0x06;
+  command_buffer[2] = 0x00;
+  command_buffer[3] = 0x00;
+  command_buffer[4] = 0x00;
+  command_buffer[5] = 0x00;
+  command_buffer[6] = 0xff;
+
+  send_command( pixelator, command_buffer );
+
   // Send top left border command
   send_pixel_command( pixelator, SET_BORDER_CMD, top_left, 0x00 );
 
@@ -188,14 +199,14 @@ int initialize_serial_port( HTPewPewOpts options) {
   tcflush(fd, TCIFLUSH);
   tcsetattr(fd,TCSANOW,&newtio);
 
-  sleep(2);
+  sleep(1);
 
   return fd;
 }
 
 void send_command( PixelatorState *pixelator, uint8_t *command_buffer){
   write( pixelator->carver_handle, command_buffer, COMMAND_SIZE);
-  usleep(100000);
+  usleep(10000);
 }
 
 void wait_for_carver_response( PixelatorState *pixelator ){

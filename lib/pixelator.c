@@ -44,7 +44,7 @@ Pixel* get_top_left_pixel(PixelatorState* state) {
       // for each x value, move through each pixel
       darkness = get_pixel_intensity(pwand[x]);
       if( darkness != 0 )
-        break;
+        return(state->px);
     }
     // move to the next row
     pwand = PixelGetNextIteratorRow(state->it, &width);

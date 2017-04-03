@@ -20,6 +20,7 @@
 #define HANDSHAKE_CMD         0x1a
 #define SET_BORDER_CMD        0x1b
 #define DRAW_BOX_CMD          0x1c
+#define LASER_INTENSITY_CMD   0x33
 // TODO is this goto?
 #define GOTO_CMD              0x18
 #define INIT_CMD              0x15

@@ -163,10 +163,11 @@ int main (int argc, char **argv)
     return 1;
   } else {
     MagickWand* wand = prepare_image(options);
+    if( options.dry != 1) {
+      PixelatorState *pixelator_state = pixelator_init(options,wand);
 
-    PixelatorState *pixelator_state = pixelator_init(options,wand);
-
-    stream(pixelator_state, options);
+      stream(pixelator_state, options);
+    }
 
     cleanup_image(wand);
   }
