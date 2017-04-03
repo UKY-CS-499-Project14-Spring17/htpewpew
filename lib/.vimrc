@@ -1,1 +1,1 @@
-syn keyword Type Pixel PixelatorState MagickWand PixelIterator HTPewPewOpts
+syn keyword Type Pixel PixelatorState MagickWand PixelIterator HTPewPewOpts MagickBooleanType Quantum ExceptionType

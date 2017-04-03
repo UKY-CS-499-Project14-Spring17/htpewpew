@@ -4,10 +4,14 @@ void stream(PixelatorState *pixelator, HTPewPewOpts options){
   pixelator->carver_handle = initialize_serial_port(options);
   pixelator->readbuffer    = (uint8_t *) malloc( READ_BUFFER_SIZE * sizeof pixelator->readbuffer );
 
+  // Initialize carver, which returns a pointer to the first pixel
   Pixel *first_pixel = initialize_carver(pixelator);
    
+  // Carve the image. Returns the counter for the final
+  // pixel, which is used in the finalization command
   uint8_t last_pixel_counter = carve_image(pixelator, first_pixel);
 
+  // Finalize the carve
   finalize_carving( pixelator, last_pixel_counter );
 
   free(pixelator->readbuffer);
