@@ -27,7 +27,11 @@
 #define MAX_PIXEL_COUNTER_BW  0x78
 #define HALF_PIXEL_COUNTER_BW 0x5a
 #define MIN_PIXEL_COUNTER_BW  0x3d
-#define MAX_LOWER_BYTE        0xff
+// Radix is just the fancy word for number base
+// and it sounds better as a variable name. This
+// is the number where the low byte goes to 0x00 
+// and the high byte increments
+#define COORDINATE_RADIX      0x64
 
 #define READ_BUFFER_SIZE      256
 

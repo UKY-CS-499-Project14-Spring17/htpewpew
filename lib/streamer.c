@@ -23,10 +23,10 @@ void send_pixel_command( PixelatorState *pixelator, uint8_t command, Pixel *pixe
   uint8_t *pixel_command_buffer = (uint8_t *) malloc( COMMAND_SIZE * sizeof pixel_command_buffer );
 
   pixel_command_buffer[0] = command;
-  pixel_command_buffer[1] = pixel->x/MAX_LOWER_BYTE;
-  pixel_command_buffer[2] = pixel->x%MAX_LOWER_BYTE;
-  pixel_command_buffer[3] = pixel->y/MAX_LOWER_BYTE;
-  pixel_command_buffer[4] = pixel->y%MAX_LOWER_BYTE;
+  pixel_command_buffer[1] = pixel->x/COORDINATE_RADIX;
+  pixel_command_buffer[2] = pixel->x%COORDINATE_RADIX;
+  pixel_command_buffer[3] = pixel->y/COORDINATE_RADIX;
+  pixel_command_buffer[4] = pixel->y%COORDINATE_RADIX;
   pixel_command_buffer[5] = aux_code;
   pixel_command_buffer[6] = 0xff;
 
