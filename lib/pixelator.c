@@ -1,5 +1,15 @@
 #include "pixelator.h"
 
+void center_pixel(PixelatorState* state) {
+  size_t width, height, padx, pady;
+  width  = MagickGetImageWidth( state->wand );
+  height = MagickGetImageHeight( state->wand );
+  padx   = (CANVAS_SIZE - width)/2;
+  pady   = (CANVAS_SIZE - height)/2;
+  state->px->x += padx;
+  state->px->y += pady;
+}
+
 unsigned char get_pixel_intensity(PixelWand* pixel) {
   double hue, sat, light_d;
   unsigned char darkness;
@@ -88,17 +98,18 @@ Pixel* get_bottom_right_pixel(PixelatorState* state) {
 
 Pixel* get_next_pixel(PixelatorState* state) {
   // allocate space for the pixel, return the pointer
-  size_t width;
+  size_t width, height;
   short x = state->x + 1;
   unsigned char darkness;
   PixelWand** pwand;
+  height = MagickGetImageHeight( state->wand );
   if( state->px == NULL )
     state->px = malloc( sizeof(*(state->px)) );
   // check that PixelIterator is valid
   if (state->it == NULL)
     throw_wand_exception(state->wand);
   pwand = PixelGetCurrentIteratorRow(state->it, &width);
-  while( pwand != NULL ) {
+  while( pwand != NULL && state->y < height) {
     for( /* do not initialize x */ ; x < width; x++ ) {
       // for each x value, move through each pixel
       darkness = get_pixel_intensity(pwand[x]);
@@ -110,6 +121,8 @@ Pixel* get_next_pixel(PixelatorState* state) {
         state->px->x = state->x;
         state->px->y = state->y;
         state->px->intensity = darkness;
+        center_pixel(state);
+        fnote("y=%d x=%d\n",state->px->y, state->px->x);
         return(state->px);
       }
     }

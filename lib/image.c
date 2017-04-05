@@ -10,6 +10,8 @@ void throw_wand_exception(MagickWand* wand)
   description=MagickGetException(wand, &severity);
   (void) ferr("%s %s %lu %s\n", GetMagickModule(), description);
   description=(char *) MagickRelinquishMemory(description);
+  wand = DestroyMagickWand(wand);
+  MagickWandTerminus();
   exit(-1);
 }
 
@@ -19,23 +21,23 @@ void throw_wand_exception(MagickWand* wand)
 // outputs:
 //    void
 // side effects:
-//    wand image is resized so the longest edge is 512px
-//    if the image is smaller than 512x512, nothing happens
+//    wand image is resized so the longest edge is 489px
+//    if the image is smaller than 489x489, nothing happens
 void resize_image(MagickWand** wand)
 {
   size_t width, height;
   // get the image size
   width  = MagickGetImageWidth(*wand);
   height = MagickGetImageHeight(*wand);
-  // only resize if it's bigger than 512x512
+  // only resize if it's bigger than 489x489
   fmsg("size:  \t%dx%d\n", (int)width, (int)height);
-  if (width > 512 || height > 512) {
+  if (width > CANVAS_SIZE || height > CANVAS_SIZE) {
     if (width > height) {
-      height = (int)((height/(float) width) * 512);
-      width  = 512;
+      height = (int)((height/(float) width) * CANVAS_SIZE);
+      width  = CANVAS_SIZE;
     } else {
-      width  = (int)((width/(float) height) * 512);
-      height = 512;
+      width  = (int)((width/(float) height) * CANVAS_SIZE);
+      height = CANVAS_SIZE;
     }
     fmsg("resize:\t%dx%d\n", (int)width, (int)height);
     MagickBooleanType status = MagickAdaptiveResizeImage(*wand, width, height);
