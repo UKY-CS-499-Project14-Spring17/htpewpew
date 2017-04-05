@@ -4,8 +4,6 @@
 #include "image.h"
 #include <stdint.h>
 
-#define CANVAS_SIZE 1113
-
 typedef struct pixel
 {
   // x & y should never exceed 1300 (0x0500)

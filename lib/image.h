@@ -7,6 +7,8 @@
 #include "options.h"
 #include "cli.h"
 
+#define CANVAS_SIZE 489
+
 void throw_wand_exception(MagickWand* wand);
 
 void resize_image(MagickWand** wand);
