@@ -10,6 +10,8 @@ void throw_wand_exception(MagickWand* wand)
   description=MagickGetException(wand, &severity);
   (void) ferr("%s %s %lu %s\n", GetMagickModule(), description);
   description=(char *) MagickRelinquishMemory(description);
+  wand = DestroyMagickWand(wand);
+  MagickWandTerminus();
   exit(-1);
 }
 
