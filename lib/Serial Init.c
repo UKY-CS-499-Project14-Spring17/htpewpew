@@ -1,3 +1,6 @@
+/* This code was modified from the Non-Canonical Input Processing example on: http://tldp.org/HOWTO/Serial-Programming-HOWTO/x115.html
+*/
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
