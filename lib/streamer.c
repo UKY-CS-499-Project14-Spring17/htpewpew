@@ -122,6 +122,7 @@ Pixel *initialize_carver(PixelatorState *pixelator){
   Pixel *first_pixel = get_next_pixel( pixelator );
   if( first_pixel == NULL ){
     ferr( "Unable to retrieve first pixel information" );
+    exit(-1);
   }
 
   send_pixel_command( pixelator, GOTO_CMD, first_pixel, 0x00 );
