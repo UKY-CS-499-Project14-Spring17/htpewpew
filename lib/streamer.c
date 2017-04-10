@@ -183,9 +183,13 @@ void finalize_carving( PixelatorState *pixelator, uint8_t final_counter_value ){
   free( command_buffer );
 }
 
+/* This function was modified from the Non-Canonical Input Processing example on: http://tldp.org/HOWTO/Serial-Programming-HOWTO/x115.html
+*/
 int initialize_serial_port( HTPewPewOpts options) {
   int fd;
   struct termios oldtio,newtio;
+  
+  //if no port is specified open serial connection on default port
   if(options.port == NULL) {
     fd = open(MODEMDEVICE, O_RDWR | O_NOCTTY ); 
     if (fd <0) {perror(MODEMDEVICE); exit(-1); }
@@ -196,10 +200,10 @@ int initialize_serial_port( HTPewPewOpts options) {
 
   tcgetattr(fd,&oldtio); /* save current port settings */
 
-  bzero(&newtio, sizeof(newtio));
-  newtio.c_cflag = BAUDRATE | CS8 | CLOCAL | CREAD;
-  newtio.c_iflag = IGNPAR;
-  newtio.c_oflag = 0;
+  bzero(&newtio, sizeof(newtio)); //zero out new termios struct
+  newtio.c_cflag = BAUDRATE | CS8 | CLOCAL | CREAD; //set baudrate, bits per character, and 2 options that should almost always be enabled
+  newtio.c_iflag = IGNPAR; //ignore parity errors
+  newtio.c_oflag = 0; //no output options used
 
   /* set input mode (non-canonical, no echo,...) */
   newtio.c_lflag = 0;
@@ -207,12 +211,12 @@ int initialize_serial_port( HTPewPewOpts options) {
   newtio.c_cc[VTIME]    = 0;   /* inter-character timer unused */
   newtio.c_cc[VMIN]     = 4;   /* blocking read until 4 chars received */
 
-  tcflush(fd, TCIFLUSH);
-  tcsetattr(fd,TCSANOW,&newtio);
+  tcflush(fd, TCIFLUSH); //flush the queue for safety
+  tcsetattr(fd,TCSANOW,&newtio); //change the serial settings to what we just built
 
-  sleep(1);
+  sleep(1); //pause so settings are changed before trying to send information
 
-  return fd;
+  return fd; //return file descriptor to the serial connection
 }
 
 void send_command( PixelatorState *pixelator, uint8_t *command_buffer){
