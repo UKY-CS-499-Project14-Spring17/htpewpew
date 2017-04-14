@@ -85,6 +85,7 @@ static error_t parse_opt (int key, char *arg, struct argp_state *state) // check
     //range.
     case 'i':
       a->intensity = atoi(arg);
+      //Check to make sure the input intensity is in the possible range.
       if( a->intensity < 1 || a->intensity > 10) {
         ferr("Intensity must be between 0-10\n");
     	  argp_usage(state);
@@ -105,12 +106,13 @@ static error_t parse_opt (int key, char *arg, struct argp_state *state) // check
     //default of /dev/ttyUSB0.
     case 'p':
       a->port = arg; // TODO validate
+      //Check to see if the port looks like a path.
       if( a->port[0] != '/') {
         fwarn("%s does not look like a path to a port (i.e. /dev/ttyUSB0)\n", a->port);
       }
       break;
     //threshold option. If this is input we need to use the threshold value indicated by the user 
-    //for converting to back and white instead of the default setting of 50.
+    //for converting to black and white instead of the default setting of 50.
     case 't':
       if( arg != NULL) {
         a->threshold = atoi(arg);
