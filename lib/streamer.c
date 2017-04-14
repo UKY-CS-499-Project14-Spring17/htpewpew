@@ -1,3 +1,16 @@
+/*
+University of Kentucky 
+CS 499 Spring 2017
+A Linux based program to run the HTPOW brand laser engravers.
+Authors: Lucian Hymer, Grant Sparks, Patrick Thompson
+
+streamer.c handles making the serial connection to the engraver 
+and communicating all of the commands to the engraver. It takes the 
+pixel data and turns it into instructions the engraver understands. 
+It also handles construction the instructions for all of the other 
+commands such as setting laser intensity and burn time.
+*/
+
 #include "streamer.h"
 
 void stream(PixelatorState *pixelator, HTPewPewOpts options){
