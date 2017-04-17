@@ -12,3 +12,5 @@ lib/test
 # images should be manually installed from now on
 *.jpg
 *.png
+
+.fuse*
