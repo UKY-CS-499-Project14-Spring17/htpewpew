@@ -1,15 +1,39 @@
+/*
+University of Kentucky 
+CS 499 Spring 2017
+A Linux based program to run the HTPOW brand laser engravers.
+Authors: Lucian Hymer, Grant Sparks, Patrick Thompson
+
+pixelator.c handles scanning through the image and finding the 
+pixels that need to be carved to hand to the streamer. It scans 
+through an image and finds the pixels position and brightness, 
+represented here as intensity, and stores it in a "pixel" struct 
+that is passed back and forth between the pixelator and the 
+streamer.
+*/
+
 #include "pixelator.h"
 
+//This function adds padding to pixels if the image size is 
+//smaller than the max size so that the image is printed in 
+//the middle of the canvas or workspace instead of from the 
+//upper left corner.
 void center_pixel(PixelatorState* state) {
   size_t width, height, padx, pady;
+  //Get current image height and width.
   width  = MagickGetImageWidth( state->wand );
   height = MagickGetImageHeight( state->wand );
+  //Calculate padding that needs to be added.
   padx   = (CANVAS_SIZE - width)/2;
   pady   = (CANVAS_SIZE - height)/2;
+  //Add padding to the pixel.
   state->px->x += padx;
   state->px->y += pady;
 }
 
+//This function finds the brightness of the input pixel 
+//and converts it to a darkness measurement to be 
+//compatible with the engraver's protocol.
 unsigned char get_pixel_intensity(PixelWand* pixel) {
   double hue, sat, light_d;
   unsigned char darkness;
@@ -21,6 +45,8 @@ unsigned char get_pixel_intensity(PixelWand* pixel) {
   return(darkness);
 }
 
+//This function initializes the pixelator by creating the PixelatorState 
+//struct and setting the starting values inside it.
 PixelatorState* pixelator_init(HTPewPewOpts opts, MagickWand* wand) {
   // allocate space for the state, return the pointer
   PixelatorState* state;
@@ -37,6 +63,8 @@ PixelatorState* pixelator_init(HTPewPewOpts opts, MagickWand* wand) {
   return(state);
 }
 
+//This function scans through the image to find the top left most 
+//pixel. The engraver needs this information in its protocol.
 Pixel* get_top_left_pixel(PixelatorState* state) {
   PixelIterator* it = NewPixelIterator(state->wand);
   PixelWand** pwand;
@@ -65,6 +93,8 @@ Pixel* get_top_left_pixel(PixelatorState* state) {
   return(state->px);
 }
 
+//This function scans through the image to find the bottom right most 
+//pixel. The engraver needs this information in its protocol.
 Pixel* get_bottom_right_pixel(PixelatorState* state) {
   PixelIterator* it = NewPixelIterator(state->wand);
   PixelWand** pwand;
@@ -96,6 +126,10 @@ Pixel* get_bottom_right_pixel(PixelatorState* state) {
   return(state->px);
 }
 
+//This function starts at the position of the given pixel and 
+//finds the next one to engrave by scanning to the right and 
+//down from the given pixel until it finds one that is dark 
+//enough to be engraved.
 Pixel* get_next_pixel(PixelatorState* state) {
   // allocate space for the pixel, return the pointer
   size_t width, height;

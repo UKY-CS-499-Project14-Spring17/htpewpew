@@ -1,3 +1,14 @@
+/*
+University of Kentucky 
+CS 499 Spring 2017
+A Linux based program to run the HTPOW brand laser engravers.
+Authors: Lucian Hymer, Grant Sparks, Patrick Thompson
+
+main.c handles all of the parsing and interpretation of the user input and calls all of 
+the necessary functions from the other C files to complete the engraving based on the 
+user input.
+*/
+
 #include "cli.h"
 #include "image.h"
 #include "pixelator.h"
@@ -35,6 +46,8 @@ static struct argp_option options[] =
 
 static error_t parse_verbose (int key, char *arg, struct argp_state *state) // set verbose and silent flags first
 {
+  //Look through the user input and see if the verbose or silent modes are set first so that the program knows to be 
+  //verbose or silent in parsing the user's input.
   switch (key)
     {
     case 'v':
@@ -44,7 +57,7 @@ static error_t parse_verbose (int key, char *arg, struct argp_state *state) // s
     case 's':
       set_silent();
       fwarn("Silent mode enabled: stdout silenced\n");
-    }
+    }//TODO Need a default option?
   return 0;
 }
 
@@ -52,18 +65,27 @@ static error_t parse_opt (int key, char *arg, struct argp_state *state) // check
 {
   HTPewPewOpts *a = state->input;
 
+  //Look through the user input and see which options are set.
   switch (key)
     {
+    //burn-time option. If this is input we need to change the laser engravers burn time setting to 
+    //what the user indicates.
     case 'b':
       a->burn = atoi(arg); // TODO validate
       fnote("Burn time set to %i ms\n",a->intensity);
       break;
+    //dry-run option. If this is input we need to do all of the steps except for sending the commands 
+    //to the engraver. 
     case 'd':
       a->dry = 1;
       fnote("Dry run mode enabled\n",a->intensity);
       break;
+    //intensity option. If this is input then we need to change the laser intensity setting to what 
+    //the user indicated. The intensity only has arange from 1-10 so report an error if it is out of 
+    //range.
     case 'i':
       a->intensity = atoi(arg);
+      //Check to make sure the input intensity is in the possible range.
       if( a->intensity < 1 || a->intensity > 10) {
         ferr("Intensity must be between 0-10\n");
     	  argp_usage(state);
@@ -71,6 +93,8 @@ static error_t parse_opt (int key, char *arg, struct argp_state *state) // check
         fnote("Intensity set to %i\n",a->intensity);
       }
       break;
+    //outfile option. If this is input we need to output the altered image to the file indicated by 
+    //the user.
     case 'o':
       a->outfile = arg; // TODO validate
       if( a->outfile[0] == '-') {
@@ -78,12 +102,17 @@ static error_t parse_opt (int key, char *arg, struct argp_state *state) // check
       }
       fnote("Image output set to %s\n",a->outfile);
       break;
+    //port option. If this is input we need to connect to the engraver on a different port than the 
+    //default of /dev/ttyUSB0.
     case 'p':
       a->port = arg; // TODO validate
+      //Check to see if the port looks like a path.
       if( a->port[0] != '/') {
         fwarn("%s does not look like a path to a port (i.e. /dev/ttyUSB0)\n", a->port);
       }
       break;
+    //threshold option. If this is input we need to use the threshold value indicated by the user 
+    //for converting to black and white instead of the default setting of 50.
     case 't':
       if( arg != NULL) {
         a->threshold = atoi(arg);
@@ -93,14 +122,19 @@ static error_t parse_opt (int key, char *arg, struct argp_state *state) // check
         fwarn("Setting threshold to default 50%%\n");
       }
       break;
+    //x-offset option. If this is input then the image needs to be shifted in the x direction by 
+    //pixel amount indicated by the user. This is used by the streamer if it is set. TODO verify
     case 'x':
       a->x = atoi(arg); // TODO validate // TODO negative numbers
       fnote("Setting x-offset to %d\n", a->x);
       break;
+    //y-offset option. If this is input then the image needs to be shifted in the y direction by 
+    //pixel amount indicated by the user. This is used by the streamer if it is set. TODO verify
     case 'y':
       a->y = atoi(arg); // TODO validate // TODO negative numbers
       fnote("Setting y-offset to %d\n", a->y);
       break;
+    //The verbose and silent options are handled separatley on thier own in parse_verbose().
     case 'v': // skip verbose and silent
     case 's': // these are checked first
       break;
