@@ -3,8 +3,9 @@
 
 #include "../cli.h"
 
-void tmsg(char* s_, ...);
-void tfail(char* s_, ...);
-void tpass(char* s_, ...);
+void ttext(char* s_, ...); // use normal text
+void tmsg(char* s_, ...);  // blue text
+void tfail(char* s_, ...); // red " FAIL " text
+void tpass(char* s_, ...); // green " PASS " text
 
 #endif
