@@ -35,6 +35,7 @@ void center_pixel(PixelatorState* state);
 unsigned char get_pixel_intensity(PixelWand* pixel);
 
 PixelatorState* pixelator_init(HTPewPewOpts opts, MagickWand* wand);
+Pixel scan_until_dark_pixel(PixelatorState* state);
 Pixel* get_top_left_pixel(PixelatorState* state);
 Pixel* get_bottom_right_pixel(PixelatorState* state);
 Pixel* get_next_pixel(PixelatorState* state);

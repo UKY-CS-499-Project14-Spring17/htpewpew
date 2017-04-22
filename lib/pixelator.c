@@ -63,66 +63,80 @@ PixelatorState* pixelator_init(HTPewPewOpts opts, MagickWand* wand) {
   return(state);
 }
 
-//This function scans through the image to find the top left most 
-//pixel. The engraver needs this information in its protocol.
-Pixel* get_top_left_pixel(PixelatorState* state) {
-  PixelIterator* it = NewPixelIterator(state->wand);
-  PixelWand** pwand;
-  size_t width;
+//TODO describe
+Pixel scan_until_dark_pixel(PixelatorState* state) {
   unsigned char darkness;
-  if( state->px == NULL )
-    state->px = malloc( sizeof(*(state->px)) );
-  state->px->x = 0;
-  state->px->y = 0;
-  state->px->intensity = 0;
+  size_t width;
+  Pixel first_dark;
+  first_dark.x = 0;
+  first_dark.y = 0;
+  PixelIterator* it = NewPixelIterator(state->wand);
   // collect the first row with a non-white pixel
-  pwand = PixelGetCurrentIteratorRow(it, &width);
+  PixelSetFirstIteratorRow(it);
+  PixelWand** pwand = PixelGetCurrentIteratorRow(it, &width);
   while( pwand != NULL ) {
-    for( short x = 0; x < width; x++ ) {
+    for( first_dark.x = 0; first_dark.x < width; first_dark.x++ ) {
       // for each x value, move through each pixel
-      darkness = get_pixel_intensity(pwand[x]);
+      darkness = get_pixel_intensity(pwand[first_dark.x]);
       if( darkness != 0 )
-        return(state->px);
+        return( first_dark );
     }
     // move to the next row
     pwand = PixelGetNextIteratorRow(state->it, &width);
     PixelSyncIterator(state->it);
     // drop to the next row
-    state->px->y += 1;
+    first_dark.y += 1;
   }
+  it = DestroyPixelIterator(it);
+  return first_dark;
+}
+
+//This function scans through the image to find the top left most 
+//pixel. The engraver needs this information in its protocol.
+Pixel* get_top_left_pixel(PixelatorState* state) {
+  PixelWand* pwhite;
+  if( state->px == NULL )
+    state->px = malloc( sizeof(*(state->px)) );
+  state->px->intensity = 0;
+  Pixel top = scan_until_dark_pixel(state);
+  // make a white pixel to serve as the background
+  pwhite = NewPixelWand();
+	PixelSetColor(pwhite,"white");
+  // rotate the image 90 degrees (clockwise?)
+  MagickRotateImage(state->wand, pwhite, 90);
+  Pixel left = scan_until_dark_pixel(state);
+  // rotate the image back 90 degrees (ccwise?)
+  MagickRotateImage(state->wand, pwhite, -90);
+  state->px->y = top.y;
+  state->px->x = left.y; // remember, this is rotated
+  center_pixel(state);
   return(state->px);
 }
 
 //This function scans through the image to find the bottom right most 
 //pixel. The engraver needs this information in its protocol.
 Pixel* get_bottom_right_pixel(PixelatorState* state) {
-  PixelIterator* it = NewPixelIterator(state->wand);
-  PixelWand** pwand;
-  size_t width;
-  // Jump to the end and head up from there
-  PixelSetLastIteratorRow(it);
-  PixelSyncIterator(it);
-  unsigned char darkness;
+  size_t width, height;
+  //Get current image height and width.
+  width  = MagickGetImageWidth( state->wand );
+  height = MagickGetImageHeight( state->wand );
+  PixelWand* pwhite;
   if( state->px == NULL )
     state->px = malloc( sizeof(*(state->px)) );
-  state->px->x = 0x459;
-  state->px->y = 0x459;
   state->px->intensity = 0;
-  // collect the first row with a non-white pixel
-  pwand = PixelGetCurrentIteratorRow(it, &width);
-  while( pwand != NULL ) {
-    for( short x = 0 ; x < width; x++ ) {
-      // for each x value, move through each pixel
-      darkness = get_pixel_intensity(pwand[x]);
-      if( darkness != 0 )
-        break;
-    }
-    // move to the next row
-    pwand = PixelGetPreviousIteratorRow(state->it, &width);
-    PixelSyncIterator(state->it);
-    // drop to the next row
-    state->px->y -= 1;
-  }
+  // make a white pixel to serve as the background
+  pwhite = NewPixelWand();
+	PixelSetColor(pwhite,"white");
+  // rotate the image 90 degrees (clockwise?)
+  MagickRotateImage(state->wand, pwhite, -90);
+  Pixel right = scan_until_dark_pixel(state);
+  // rotate the image back 90 degrees (ccwise?)
+  MagickRotateImage(state->wand, pwhite, -90);
+  Pixel bottom = scan_until_dark_pixel(state);
+  MagickRotateImage(state->wand, pwhite, 180);
+  state->px->y = height - bottom.y;
+  state->px->x = width  - right.y; // remember, this is rotated
+  center_pixel(state);
   return(state->px);
 }
 
