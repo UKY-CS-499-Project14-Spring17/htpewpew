@@ -44,8 +44,6 @@ void stream(PixelatorState *pixelator, HTPewPewOpts options){
 
 //This function sends the appropriate command to carve a single pixel to the engraver.
 void send_pixel_command( PixelatorState *pixelator, uint8_t command, Pixel *pixel, uint8_t aux_code ){
-  // TODO carve command counter
-  // Do something about grayscale here
   
   //Create a buffer to construct the 7 bytes of the command.
   uint8_t *pixel_command_buffer = (uint8_t *) malloc( COMMAND_SIZE * sizeof pixel_command_buffer );
