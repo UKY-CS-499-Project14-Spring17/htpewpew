@@ -21,6 +21,7 @@
 #define SET_BORDER_CMD        0x1b
 #define DRAW_BOX_CMD          0x1c
 #define LASER_INTENSITY_CMD   0x33
+#define LASER_DWELL_TIME_CMD  0x17
 // TODO is this goto?
 #define GOTO_CMD              0x18
 #define INIT_CMD              0x15
@@ -44,5 +45,7 @@ void    finalize_carving         ( PixelatorState *pixelator, uint8_t final_coun
 int     initialize_serial_port   ( HTPewPewOpts    options                                                    );
 void    send_command             ( PixelatorState *pixelator, uint8_t *command_buffer                         );
 void    wait_for_carver_response ( PixelatorState *pixelator                                                  );
+void    change_laser_intensity   (PixelatorState* pixelator, HTPewPewOpts options                             );
+void    change_laser_dwell_time  (PixelatorState* pixelator, HTPewPewOpts options                             );
 
 #endif
