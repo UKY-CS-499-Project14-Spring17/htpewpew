@@ -34,8 +34,8 @@ static struct argp_option options[] =
   {"port",      'p', "port",      0,                    "Location of USB serial port"},
   {"threshold", 't', "threshold", OPTION_ARG_OPTIONAL,  "Use a threshold (0-100%) for black and white (default = 50%)"},
   {"bw",        't', "threshold", OPTION_ALIAS,         "Use a threshold (0-100%) for black and white (default = 50%)"},
-  {"x-offset",  'x', "x",         0,                    "Automatically offset x location (0-?)"},
-  {"y-offset",  'y', "y",         0,                    "Automatically offset y location (0-?)"},
+  {"x-offset",  'x', "x",         0,                    "Automatically offset x location, prefix with 'n' for negative"},
+  {"y-offset",  'y', "y",         0,                    "Automatically offset y location  prefix with 'n' for negative"},
   {0,           0,   0,           0,                    "INTERFACE PARAMETERS:"},
   {"verbose",   'v', 0,           0, "Enables additional debugging notes"},
   {"silent",    's', 0,           0, "Supress all standard messages"},
@@ -74,7 +74,7 @@ static error_t parse_opt (int key, char *arg, struct argp_state *state) // check
       a->burn = atoi(arg);
       //Make sure the intensity is in the acceptable range.
       if( a->burn < 1 || a->burn > 250) {
-        ferr("Intensity must be between 0-250\n");
+        ferr("Burn must be between 0-250\n");
     	  argp_usage(state);
       } else {
         fnote("Burn time set to %i\n",a->burn);
@@ -196,8 +196,8 @@ int main (int argc, char **argv)
   options.outfile   = NULL;
   options.port      = NULL;
   options.threshold = -1;
-  options.x         = 60; // TODO
-  options.y         = 60; // TODO
+  options.x         = 0; // TODO
+  options.y         = 0; // TODO
   options.shell     = 0;
 
   /* Where the magic happens */
