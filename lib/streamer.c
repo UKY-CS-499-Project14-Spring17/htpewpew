@@ -299,3 +299,40 @@ void wait_for_carver_response( PixelatorState *pixelator ){
       fnote( "Carver sent back (this probably isn't formatted correctly): %x", pixelator->readbuffer );
     }
 }
+
+//This function changes the laser intensity setting of the laser. Values between 0 and a.
+void change_laser_intensity(PixelatorState* pixelator, HTPewPewOpts options){
+  
+  uint8_t *command_buffer = (uint8_t *) malloc( COMMAND_SIZE * sizeof command_buffer );
+  
+  // Send command to set the laser intensity. 
+  command_buffer[0] = LASER_INTENSITY_CMD;
+  command_buffer[1] = options.intensity;
+  command_buffer[2] = 0x00;
+  command_buffer[3] = 0x00;
+  command_buffer[4] = 0x00;
+  command_buffer[5] = 0x00;
+  command_buffer[6] = 0xff;
+
+  send_command( pixelator, command_buffer );
+  free( command_buffer );
+}
+
+//This function changes the dwell time of the laser. Values between 0 and fa.
+void change_laser_dwell_time(PixelatorState* pixelator, HTPewPewOpts options){
+    
+  uint8_t *command_buffer = (uint8_t *) malloc( COMMAND_SIZE * sizeof command_buffer );
+  
+  // Send command to set the laser intensity. 
+  command_buffer[0] = LASER_DWELL_TIME_CMD;
+  command_buffer[1] = options.burn;
+  command_buffer[2] = 0x00;
+  command_buffer[3] = 0x00;
+  command_buffer[4] = 0x00;
+  command_buffer[5] = 0x00;
+  command_buffer[6] = 0xff;
+
+  send_command( pixelator, command_buffer );
+  free( command_buffer );
+}
+
