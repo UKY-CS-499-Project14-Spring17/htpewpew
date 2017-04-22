@@ -45,5 +45,7 @@ void    finalize_carving         ( PixelatorState *pixelator, uint8_t final_coun
 int     initialize_serial_port   ( HTPewPewOpts    options                                                    );
 void    send_command             ( PixelatorState *pixelator, uint8_t *command_buffer                         );
 void    wait_for_carver_response ( PixelatorState *pixelator                                                  );
+void    change_laser_intensity   (PixelatorState* pixelator, HTPewPewOpts options                             );
+void    change_laser_dwell_time  (PixelatorState* pixelator, HTPewPewOpts options                             );
 
 #endif
