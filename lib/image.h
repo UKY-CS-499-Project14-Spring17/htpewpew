@@ -18,5 +18,6 @@ void threshold_image(MagickWand** wand, Quantum threshold);
 
 MagickWand* prepare_image(HTPewPewOpts opts);
 int cleanup_image(MagickWand* wand);
+void check_offsets(MagickWand** wand, int *x_offset, int *y_offset);
 
 #endif

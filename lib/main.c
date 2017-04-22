@@ -125,12 +125,18 @@ static error_t parse_opt (int key, char *arg, struct argp_state *state) // check
     //x-offset option. If this is input then the image needs to be shifted in the x direction by 
     //pixel amount indicated by the user. This is used by the streamer if it is set. TODO verify
     case 'x':
+      if(arg[0] == 'n'){
+        arg[0] = '-';
+      }
       a->x = atoi(arg); // TODO validate // TODO negative numbers
       fnote("Setting x-offset to %d\n", a->x);
       break;
     //y-offset option. If this is input then the image needs to be shifted in the y direction by 
     //pixel amount indicated by the user. This is used by the streamer if it is set. TODO verify
     case 'y':
+      if(arg[0] == 'n'){
+        arg[0] = '-';
+      }
       a->y = atoi(arg); // TODO validate // TODO negative numbers
       fnote("Setting y-offset to %d\n", a->y);
       break;

@@ -72,6 +72,45 @@ void resize_image(MagickWand** wand)
   // alter compact size
 }
 
+// check_offsets
+// inputs:
+//    wand     -- MagickWand** -- passed by reference
+//    x_offset -- int*         -- passed by reference
+//    y_offset -- int*         -- passed by reference
+// outputs:
+//    void
+// side effects:
+//    Modifies x and y offset if values are too large
+void check_offsets(MagickWand** wand, int *x_offset, int *y_offset)
+{
+  size_t width, height;
+  int x_px_past_border, y_px_past_border;
+  // get the image size
+  width  = MagickGetImageWidth(*wand);
+  height = MagickGetImageHeight(*wand);
+
+  // See how far past the border the offset shifts the image
+  x_px_past_border = -(CANVAS_SIZE - width  - abs(*x_offset));
+  y_px_past_border = -(CANVAS_SIZE - height - abs(*y_offset));
+
+  if ( x_px_past_border > 0 ){
+    if( *x_offset < 0 ){
+      *x_offset += x_px_past_border;
+    } else {
+      *x_offset -= x_px_past_border;
+    }
+    fwarn("X offset value too high. Setting to max possible value %d.\n",*x_offset);
+  }
+  if ( y_px_past_border > 0 ){
+    if( *y_offset < 0 ){
+      *y_offset += y_px_past_border;
+    } else {
+      *y_offset -= y_px_past_border;
+    }
+    fwarn("Y offset value too high. Setting to max possible value %d.\n",*y_offset);
+  }
+}
+
 // antialias_image
 // inputs:
 //    wand -- MagickWand** -- passed by reference
@@ -158,6 +197,7 @@ MagickWand* prepare_image(HTPewPewOpts opts)
   //Resize the image.
   fnote("Resizing Image\n");
   resize_image(&magick_wand);
+  check_offsets(&magick_wand,&opts.x,&opts.y);
   fnote("Antialiasing Image\n");
   //Add antialiasing to thicken lines.
   antialias_image(&magick_wand);

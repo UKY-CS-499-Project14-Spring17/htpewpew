@@ -23,6 +23,9 @@ typedef struct pixelator_state
   // current x & y location for scanning
   short x;
   short y;
+  // x and y offsets
+  short x_offset;
+  short y_offset;
   // scan_dir
   // 0 = horizontal
   // 1 = vertical

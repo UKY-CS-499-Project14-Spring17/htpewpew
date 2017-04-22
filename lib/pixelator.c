@@ -23,12 +23,18 @@ void center_pixel(PixelatorState* state) {
   //Get current image height and width.
   width  = MagickGetImageWidth( state->wand );
   height = MagickGetImageHeight( state->wand );
+
   //Calculate padding that needs to be added.
-  padx   = (CANVAS_SIZE - width)/2;
+  padx   = (CANVAS_SIZE - width )/2;
   pady   = (CANVAS_SIZE - height)/2;
+
   //Add padding to the pixel.
   state->px->x += padx;
   state->px->y += pady;
+  
+  //Add offset to the pixel.
+  state->px->x += state->x_offset;
+  state->px->y += state->y_offset;
 }
 
 //This function finds the brightness of the input pixel 
@@ -58,6 +64,9 @@ PixelatorState* pixelator_init(HTPewPewOpts opts, MagickWand* wand) {
   state->y = 0;
   state->px = NULL;
   state->scan_dir = 0;
+
+  state->x_offset = opts.x;
+  state->y_offset = opts.y;
   // TODO change scan direction
   // TODO the fuction
   return(state);
