@@ -23,6 +23,12 @@ void stream(PixelatorState *pixelator, HTPewPewOpts options){
   pixelator->carver_handle = initialize_serial_port(options);
   //Allocate memory for the read buffer.
   pixelator->readbuffer    = (uint8_t *) malloc( READ_BUFFER_SIZE * sizeof pixelator->readbuffer );
+  
+  //Set laser intensity.
+  change_laser_intensity(pixelator, options);
+  
+  //Set dwell time.
+  change_laser_dwell_time(pixelator, options);
 
   // Initialize carver, which returns a pointer to the first pixel.
   //This sends the first 5 instructions to the engraver and gets the 
@@ -133,7 +139,8 @@ Pixel *initialize_carver(PixelatorState *pixelator){
 
   // Send command to set the laser intensity. 
   // TODO this should probably be removed.
-  command_buffer[0] = LASER_INTENSITY_CMD;
+  // Commented out for now to test the new functions. Calling them in the stream function.
+  /*command_buffer[0] = LASER_INTENSITY_CMD;
   command_buffer[1] = 0x06;
   command_buffer[2] = 0x00;
   command_buffer[3] = 0x00;
@@ -141,7 +148,7 @@ Pixel *initialize_carver(PixelatorState *pixelator){
   command_buffer[5] = 0x00;
   command_buffer[6] = 0xff;
 
-  send_command( pixelator, command_buffer );
+  send_command( pixelator, command_buffer );*/
 
   // Send top left border command and confirm it worked.
   Pixel *top_left = get_top_left_pixel(pixelator);
