@@ -27,9 +27,9 @@ const char *argp_program_bug_address = "<TODO@uky.edu>";
 static struct argp_option options[] =
 {
   {0,           0,   0,           0,                    "ENGRAVER PARAMETERS:"},
-  {"burn-time", 'b', "burn",      0,                    "Set maximum burn time (default = ? ms)"},
+  {"burn-time", 'b', "burn",      0,                    "Set maximum burn time (1-250 ms range, default = 60 ms)"},
   {"dry-run",   'd', 0,           0,                    "Edit image, show engraving area, and quit"},
-  {"intensity", 'i', "intensity", 0,                    "Set the laser intensity (default = ?)"},
+  {"intensity", 'i', "intensity", 0,                    "Set the laser intensity (1-10 range, default = 5)"},
   {"output",    'o', "outfile",   0,                    "Output to OUTFILE instead of to standard output"},
   {"port",      'p', "port",      0,                    "Location of USB serial port"},
   {"threshold", 't', "threshold", OPTION_ARG_OPTIONAL,  "Use a threshold (0-100%) for black and white (default = 50%)"},
@@ -71,14 +71,20 @@ static error_t parse_opt (int key, char *arg, struct argp_state *state) // check
     //burn-time option. If this is input we need to change the laser engravers burn time setting to 
     //what the user indicates.
     case 'b':
-      a->burn = atoi(arg); // TODO validate
-      fnote("Burn time set to %i ms\n",a->intensity);
+      a->burn = atoi(arg);
+      //Make sure the intensity is in the acceptable range.
+      if( a->burn < 1 || a->burn > 250) {
+        ferr("Intensity must be between 0-250\n");
+    	  argp_usage(state);
+      } else {
+        fnote("Burn time set to %i\n",a->burn);
+      }
       break;
     //dry-run option. If this is input we need to do all of the steps except for sending the commands 
     //to the engraver. 
     case 'd':
       a->dry = 1;
-      fnote("Dry run mode enabled\n",a->intensity);
+      fnote("Dry run mode enabled\n");
       break;
     //intensity option. If this is input then we need to change the laser intensity setting to what 
     //the user indicated. The intensity only has arange from 1-10 so report an error if it is out of 
