@@ -40,6 +40,7 @@ void center_pixel(PixelatorState* state) {
 //This function finds the brightness of the input pixel 
 //and converts it to a darkness measurement to be 
 //compatible with the engraver's protocol.
+// TODO: use PixelGetBlackQuantum(pixel) instead of GetHSL
 unsigned char get_pixel_intensity(PixelWand* pixel) {
   double hue, sat, light_d;
   unsigned char darkness;
@@ -58,6 +59,7 @@ PixelatorState* pixelator_init(HTPewPewOpts opts, MagickWand* wand) {
   PixelatorState* state;
   state = malloc( sizeof(*state) );
   state->it = NewPixelIterator(wand);
+  PixelSetFirstIteratorRow(state->it);
   // set default values
   state->wand = wand;
   state->x = -1;
@@ -74,7 +76,6 @@ PixelatorState* pixelator_init(HTPewPewOpts opts, MagickWand* wand) {
 
 //TODO describe
 Pixel scan_until_dark_pixel(PixelatorState* state) {
-  unsigned char darkness;
   size_t width;
   Pixel first_dark;
   first_dark.x = 0;
@@ -86,13 +87,14 @@ Pixel scan_until_dark_pixel(PixelatorState* state) {
   while( pwand != NULL ) {
     for( first_dark.x = 0; first_dark.x < width; first_dark.x++ ) {
       // for each x value, move through each pixel
-      darkness = get_pixel_intensity(pwand[first_dark.x]);
-      if( darkness != 0 )
-        return( first_dark );
+      if( get_pixel_intensity(pwand[first_dark.x]) != 0 ) {
+        pwand = NULL;
+        break;
+      }
     }
     // move to the next row
-    pwand = PixelGetNextIteratorRow(state->it, &width);
-    PixelSyncIterator(state->it);
+    pwand = PixelGetNextIteratorRow(it, &width);
+    PixelSyncIterator(it);
     // drop to the next row
     first_dark.y += 1;
   }
@@ -116,6 +118,7 @@ Pixel* get_top_left_pixel(PixelatorState* state) {
   Pixel left = scan_until_dark_pixel(state);
   // rotate the image back 90 degrees (ccwise?)
   MagickRotateImage(state->wand, pwhite, -90);
+  pwhite = DestroyPixelWand(pwhite);
   state->px->y = top.y;
   state->px->x = left.y; // remember, this is rotated
   center_pixel(state);
@@ -143,6 +146,7 @@ Pixel* get_bottom_right_pixel(PixelatorState* state) {
   MagickRotateImage(state->wand, pwhite, -90);
   Pixel bottom = scan_until_dark_pixel(state);
   MagickRotateImage(state->wand, pwhite, 180);
+  pwhite = DestroyPixelWand(pwhite);
   state->px->y = height - bottom.y;
   state->px->x = width  - right.y; // remember, this is rotated
   center_pixel(state);
