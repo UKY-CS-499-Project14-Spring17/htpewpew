@@ -28,16 +28,10 @@ void stream(PixelatorState *pixelator, HTPewPewOpts options){
   //Allocate memory for the read buffer.
   pixelator->readbuffer    = (uint8_t *) malloc( READ_BUFFER_SIZE * sizeof pixelator->readbuffer );
   
-  //Set laser intensity.
-  change_laser_intensity(pixelator, options);
-  
-  //Set dwell time.
-  change_laser_dwell_time(pixelator, options);
-
   // Initialize carver, which returns a pointer to the first pixel.
   //This sends the first 5 instructions to the engraver and gets the 
   //first pixel from the pixelator.
-  Pixel *first_pixel = initialize_carver(pixelator);
+  Pixel *first_pixel = initialize_carver(pixelator, options);
    
   // Carve the image. Returns the counter for the final
   // pixel, which is used in the finalization command.
@@ -119,7 +113,7 @@ uint8_t get_next_pixel_count( PixelatorState *pixelator, uint8_t previous_pixel_
 //to the engraver (1a 00 00 00 00 00 ff). Then sends the first 5 
 //commands to the engraver that lets it know how big the image 
 //is and that the next instructions will be pixel locations to engrave.
-Pixel *initialize_carver(PixelatorState *pixelator){
+Pixel *initialize_carver(PixelatorState *pixelator, HTPewPewOpts options){
 
   uint8_t *command_buffer = (uint8_t *) malloc( COMMAND_SIZE * sizeof command_buffer );
   
@@ -151,6 +145,13 @@ Pixel *initialize_carver(PixelatorState *pixelator){
   command_buffer[6] = 0xff;
 
   send_command( pixelator, command_buffer );*/
+
+  //Set laser intensity.
+  change_laser_intensity(pixelator, options);
+  
+  //Set dwell time.
+  change_laser_dwell_time(pixelator, options);
+
 
   // Send top left border command and confirm it worked.
   Pixel *top_left = get_top_left_pixel(pixelator);

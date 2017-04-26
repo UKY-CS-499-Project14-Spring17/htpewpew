@@ -39,7 +39,7 @@
 void    stream                   ( PixelatorState *pixelator, HTPewPewOpts options                            );
 void    send_pixel_command       ( PixelatorState *pixelator, uint8_t command, Pixel *pixel, uint8_t aux_code );
 uint8_t get_next_pixel_count     ( PixelatorState *pixelator, uint8_t previous_pixel_count                    );
-Pixel   *initialize_carver       ( PixelatorState *pixelator                                                  );
+Pixel   *initialize_carver       ( PixelatorState *pixelator, HTPewPewOpts options                            );
 uint8_t carve_image              ( PixelatorState *pixelator, Pixel *first_pixel                              );
 void    finalize_carving         ( PixelatorState *pixelator, uint8_t final_counter_value                     );
 int     initialize_serial_port   ( HTPewPewOpts    options                                                    );
