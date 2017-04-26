@@ -18,6 +18,10 @@ commands such as setting laser intensity and burn time.
 //to begin carving, then sends all of the individual pixels to carve, and 
 //finally ends with the last instructions to close out the carving.
 void stream(PixelatorState *pixelator, HTPewPewOpts options){
+  if(pixelator == NULL){
+    ferr("Failed to stream. Invalid pixelator state provided.\n");
+    return;
+  }
   //Set up the serial connection and store the file descriptor in the 
   //pixelator state struct.
   pixelator->carver_handle = initialize_serial_port(options);
