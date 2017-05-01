@@ -2,7 +2,7 @@
 # autodetect the user's ImageMagick/MagickWand libraries
 magick_libs  = $(shell pkg-config --cflags --libs MagickWand)
 tests        = $(shell find tests/ -name '*.c')
-test_helpers = tests/helpers.c
+test_helpers = tests/helpers.c tests/streamer_test_overrides.c
 gcc_opts = -Wall
 # list of all files to be cleaned
 objs = image.o cli.o pixelator.o streamer.o
@@ -18,7 +18,7 @@ debug: $(objs) main.c
 
 test: test.c $(tests) $(objs) $(test_helpers)
 	@echo "gcc $(gcc_opts) -g test.c $(test_helpers) $(objs) -o test"
-	@gcc $(gcc_opts) -g test.c $(test_helpers) $(objs) -o test $(magick_libs)
+	@gcc $(gcc_opts) -g test.c $(test_helpers) $(objs) -o test $(magick_libs) -DTESTOVERRIDE
 	./test
 
 # don't print the magick_libs garbage, please use this as a template

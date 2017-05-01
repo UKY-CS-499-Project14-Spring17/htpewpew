@@ -85,7 +85,7 @@ void send_pixel_command( PixelatorState *pixelator, uint8_t command, Pixel *pixe
 uint8_t get_next_pixel_count( PixelatorState *pixelator, uint8_t previous_pixel_count ){
   if(pixelator == NULL){
     ferr("Failed to get next pixel count. Invalid pixelator state provided.\n");
-    return;
+    return -1;
   }
   uint8_t next_pixel_count = 0;
   
@@ -108,7 +108,7 @@ uint8_t get_next_pixel_count( PixelatorState *pixelator, uint8_t previous_pixel_
   } else if( previous_pixel_count > MAX_PIXEL_COUNTER_BW || previous_pixel_count < MIN_PIXEL_COUNTER_BW ){
 
     ferr( "Pixel count out of bounds with value %#04x. Something went wrong.\n", previous_pixel_count );
-    exit(-1);
+    return -1;
   } else {
 
     next_pixel_count = previous_pixel_count + 1;
@@ -124,6 +124,10 @@ uint8_t get_next_pixel_count( PixelatorState *pixelator, uint8_t previous_pixel_
 //commands to the engraver that lets it know how big the image 
 //is and that the next instructions will be pixel locations to engrave.
 Pixel *initialize_carver(PixelatorState *pixelator, HTPewPewOpts options){
+  if(pixelator == NULL){
+    ferr("Failed to initialize carver. Invalid pixelator state provided.\n");
+    return NULL;
+  }
 
   uint8_t *command_buffer = (uint8_t *) malloc( COMMAND_SIZE * sizeof command_buffer );
   
@@ -138,23 +142,8 @@ Pixel *initialize_carver(PixelatorState *pixelator, HTPewPewOpts options){
 
   send_command( pixelator, command_buffer );
 
-  //TODO Need to change this so that it makes sure to read the full 70 byte
-  //response from the engraver.
   //Wait for the bytes from the engraver so that the read buffer isn't full.
   wait_for_carver_response( pixelator );
-
-  // Send command to set the laser intensity. 
-  // TODO this should probably be removed.
-  // Commented out for now to test the new functions. Calling them in the stream function.
-  /*command_buffer[0] = LASER_INTENSITY_CMD;
-  command_buffer[1] = 0x06;
-  command_buffer[2] = 0x00;
-  command_buffer[3] = 0x00;
-  command_buffer[4] = 0x00;
-  command_buffer[5] = 0x00;
-  command_buffer[6] = 0xff;
-
-  send_command( pixelator, command_buffer );*/
 
   //Set laser intensity.
   change_laser_intensity(pixelator, options);
