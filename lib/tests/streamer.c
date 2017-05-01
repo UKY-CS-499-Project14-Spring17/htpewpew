@@ -39,6 +39,13 @@ int streamer_tests(){
   results = results | get_next_pixel_count_test_4();
   results = results | initialize_carver_test_1();
   results = results | initialize_carver_test_2();
+  results = results | carve_image_test_1();
+  results = results | carve_image_test_2();
+  results = results | finalize_carving_test_1();
+  results = results | finalize_carving_test_2();
+  results = results | send_command_test_1();
+  results = results | send_command_test_2();
+  results = results | wait_test_1();
   return results;
 }
 
@@ -391,9 +398,6 @@ int initialize_carver_test_2(){
 
     exit(0);
   } else {
-    PixelatorState *pixelator = NULL;
-    get_top_left_pixel(pixelator);
-    bla(pixelator);
     // parent process
     tmsg("initialize_carver_test_2\n");
     int finished = 0;
@@ -447,6 +451,259 @@ int initialize_carver_test_2(){
       return 0;
     } else { 
       tfail("output did not match expected.\n");
+      return 1;
+    }
+  }
+}
+
+int carve_image_test_1(){
+  int fdn[2];
+  pipe(fdn);
+  if (fork() == 0) {
+    close(fdn[0]);
+    PixelatorState *null_pixelator = NULL;
+    Pixel pixel = {};
+
+    // stdout >> pipe >> strcmp
+    dup2(fdn[1], STDERR_FILENO);
+    carve_image(null_pixelator,&pixel);
+    close(fdn[1]);
+    exit(0);
+  } else {
+    // parent process
+    close(fdn[1]);
+    tmsg("carve_image_test_1\n");
+    int wstat;
+    wait( &wstat );
+    char errmsg[78];
+    char experrmsg[78] = KBLD KRED "Error: Failed to carve image. Invalid pixelator state provided.\n" KNRM;
+    read(fdn[0], errmsg, 78);
+    close(fdn[0]);
+    errmsg[77] = '\0';
+    if( strcmp(errmsg,experrmsg) == 0 ) {
+      tpass("\n");
+      return 0;
+    } else { 
+      tfail("message did not match expected.\n");
+      ttext("%d %s\n",strlen(errmsg), errmsg);
+      ttext("%d %s\n",strlen(experrmsg), experrmsg);
+      return 1;
+    }
+  }
+}
+
+int carve_image_test_2(){
+  int fdn[2];
+  pipe(fdn);
+  if (fork() == 0) {
+    close(fdn[0]);
+    PixelatorState pixelator = {};
+    Pixel *null_pixel = NULL;
+
+    // stdout >> pipe >> strcmp
+    dup2(fdn[1], STDERR_FILENO);
+    carve_image(&pixelator,null_pixel);
+    close(fdn[1]);
+    exit(0);
+  } else {
+    // parent process
+    close(fdn[1]);
+    tmsg("carve_image_test_2\n");
+    int wstat;
+    wait( &wstat );
+    char errmsg[73];
+    char experrmsg[73] = KBLD KRED "Error: No information for first pixel. Is the image blank?\n" KNRM;
+    read(fdn[0], errmsg, 73);
+    close(fdn[0]);
+    errmsg[72] = '\0';
+    if( strcmp(errmsg,experrmsg) == 0 ) {
+      tpass("\n");
+      return 0;
+    } else { 
+      tfail("message did not match expected.\n");
+      ttext("%d %s\n",strlen(errmsg), errmsg);
+      ttext("%d %s\n",strlen(experrmsg), experrmsg);
+      return 1;
+    }
+  }
+}
+
+int finalize_carving_test_1(){
+  int fdn[2];
+  pipe(fdn);
+  if (fork() == 0) {
+    close(fdn[0]);
+    PixelatorState *null_pixelator = NULL;
+    uint8_t counter = 0x55;
+
+    // stdout >> pipe >> strcmp
+    dup2(fdn[1], STDERR_FILENO);
+    finalize_carving(null_pixelator, counter);
+    close(fdn[1]);
+    exit(0);
+  } else {
+    // parent process
+    close(fdn[1]);
+    tmsg("finalize_carving_test_1\n");
+    int wstat;
+    wait( &wstat );
+    char errmsg[83];
+    char experrmsg[83] = KBLD KRED "Error: Failed to finalize carving. Invalid pixelator state provided.\n" KNRM;
+    read(fdn[0], errmsg, 83);
+    close(fdn[0]);
+    errmsg[82] = '\0';
+    if( strcmp(errmsg,experrmsg) == 0 ) {
+      tpass("\n");
+      return 0;
+    } else { 
+      tfail("message did not match expected.\n");
+      ttext("%d %s\n",strlen(errmsg), errmsg);
+      ttext("%d %s\n",strlen(experrmsg), experrmsg);
+      return 1;
+    }
+  }
+}
+
+int finalize_carving_test_2(){
+  int fdn[2];
+  uint8_t counter = 0x55;
+  pipe(fdn);
+  if (fork() == 0) {
+    close(fdn[0]);
+    PixelatorState pixelator = {};
+
+    pixelator.carver_handle = fdn[1];
+
+    finalize_carving(&pixelator, counter);
+    close(fdn[1]);
+    exit(0);
+  } else {
+    // parent process
+    close(fdn[1]);
+    tmsg("finalize_carving_test_2\n");
+
+    int wstat;
+    wait( &wstat );
+
+    uint8_t output[7];
+    uint8_t expout[7] = {counter,0x09,0x09,0x09,0x09,0x09,0xff};
+    read(fdn[0], output, 7);
+    close(fdn[0]);
+    if( memcmp(output,expout,7) == 0 ) {
+      tpass("\n");
+      return 0;
+    } else { 
+      tfail("output did not match expected.\n");
+      for( int i=0; i<7; i++){
+        printf("Bit %d: Expected: %02x Found: %02x\n", i, expout[i], output[i]);
+      }
+      return 1;
+    }
+  }
+}
+
+int send_command_test_1(){
+  int fdn[2];
+  pipe(fdn);
+  if (fork() == 0) {
+    close(fdn[0]);
+    PixelatorState *null_pixelator = NULL;
+    uint8_t *null_buffer = NULL;
+
+    // stdout >> pipe >> strcmp
+    dup2(fdn[1], STDERR_FILENO);
+    send_command(null_pixelator, null_buffer);
+    close(fdn[1]);
+    exit(0);
+  } else {
+    // parent process
+    close(fdn[1]);
+    tmsg("send_command_test_1\n");
+    int wstat;
+    wait( &wstat );
+    char errmsg[79];
+    char experrmsg[79] = KBLD KRED "Error: Failed to send command. Invalid pixelator state provided.\n" KNRM;
+    read(fdn[0], errmsg, 79);
+    close(fdn[0]);
+    errmsg[78] = '\0';
+    if( strcmp(errmsg,experrmsg) == 0 ) {
+      tpass("\n");
+      return 0;
+    } else { 
+      tfail("message did not match expected.\n");
+      ttext("%d %s\n",strlen(errmsg), errmsg);
+      ttext("%d %s\n",strlen(experrmsg), experrmsg);
+      return 1;
+    }
+  }
+}
+
+int send_command_test_2(){
+  int fdn[2];
+  pipe(fdn);
+  if (fork() == 0) {
+    close(fdn[0]);
+    PixelatorState pixelator = {};
+    uint8_t *null_buffer = NULL;
+
+    // stdout >> pipe >> strcmp
+    dup2(fdn[1], STDERR_FILENO);
+    send_command(&pixelator, null_buffer);
+    close(fdn[1]);
+    exit(0);
+  } else {
+    // parent process
+    close(fdn[1]);
+    tmsg("send_command_test_2\n");
+    int wstat;
+    wait( &wstat );
+    char errmsg[71];
+    char experrmsg[71] = KBLD KRED "Error: Failed to send command. Invalid command provided.\n" KNRM;
+    read(fdn[0], errmsg, 71);
+    close(fdn[0]);
+    errmsg[70] = '\0';
+    if( strcmp(errmsg,experrmsg) == 0 ) {
+      tpass("\n");
+      return 0;
+    } else { 
+      tfail("message did not match expected.\n");
+      ttext("%d %s\n",strlen(errmsg), errmsg);
+      ttext("%d %s\n",strlen(experrmsg), experrmsg);
+      return 1;
+    }
+  }
+}
+
+int wait_test_1(){
+  int fdn[2];
+  pipe(fdn);
+  if (fork() == 0) {
+    close(fdn[0]);
+    PixelatorState *null_pixelator = NULL;
+
+    // stdout >> pipe >> strcmp
+    dup2(fdn[1], STDERR_FILENO);
+    wait_for_carver_response(null_pixelator);
+    close(fdn[1]);
+    exit(0);
+  } else {
+    // parent process
+    close(fdn[1]);
+    tmsg("wait_test_1\n");
+    int wstat;
+    wait( &wstat );
+    char errmsg[82];
+    char experrmsg[82] = KBLD KRED "Error: Failed to wait for carver. Invalid pixelator state provided.\n" KNRM;
+    read(fdn[0], errmsg, 82);
+    close(fdn[0]);
+    errmsg[81] = '\0';
+    if( strcmp(errmsg,experrmsg) == 0 ) {
+      tpass("\n");
+      return 0;
+    } else { 
+      tfail("message did not match expected.\n");
+      ttext("%d %s\n",strlen(errmsg), errmsg);
+      ttext("%d %s\n",strlen(experrmsg), experrmsg);
       return 1;
     }
   }

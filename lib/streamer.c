@@ -217,12 +217,22 @@ Pixel *initialize_carver(PixelatorState *pixelator, HTPewPewOpts options){
 //This function gets pixels one at a time from the pixelator 
 //and sends an instruction to the engrave to carve them.
 uint8_t carve_image(PixelatorState *pixelator, Pixel *first_pixel){
-  uint8_t pixel_counter    = 0x3d;
-  uint8_t previous_counter = 0x3d;
+  if(pixelator == NULL){
+    ferr("Failed to carve image. Invalid pixelator state provided.\n");
+    return -1;
+  }
+
+  if(first_pixel == NULL){
+    ferr( "No information for first pixel. Is the image blank?\n");
+    return -1;
+  }
 
   Pixel *current_pixel = first_pixel;
 
   //While there are pixels to send keep making instructions and sending them.
+  uint8_t pixel_counter    = 0x3d;
+  uint8_t previous_counter = 0x3d;
+
   do{
     // The counter loops through a range defined for carving commands
     send_pixel_command( pixelator, pixel_counter, current_pixel, 0x00 );
@@ -243,6 +253,10 @@ uint8_t carve_image(PixelatorState *pixelator, Pixel *first_pixel){
 //done sending pixels. It tells the engraver that the run is done 
 //so it will be able to receive commands besides just ones to engrave.
 void finalize_carving( PixelatorState *pixelator, uint8_t final_counter_value ){
+  if(pixelator == NULL){
+    ferr("Failed to finalize carving. Invalid pixelator state provided.\n");
+    return;
+  }
   // Finalization command repeats the previous counter, but replaces
   // coordinate and aux value with 0x9
   uint8_t *command_buffer = (uint8_t *) malloc( COMMAND_SIZE * sizeof command_buffer );
@@ -300,6 +314,15 @@ int initialize_serial_port( HTPewPewOpts options) {
 
 //Wrapper for the write function to send bytes over the serial connection.
 void send_command( PixelatorState *pixelator, uint8_t *command_buffer){
+  if(pixelator == NULL){
+    ferr("Failed to send command. Invalid pixelator state provided.\n");
+    return;
+  }
+  if(command_buffer == NULL){
+    ferr("Failed to send command. Invalid command provided.\n");
+    return;
+  }
+
   if(write( pixelator->carver_handle, command_buffer, COMMAND_SIZE)<0)
     perror("Unable to send command");
   usleep(10000);
@@ -307,13 +330,17 @@ void send_command( PixelatorState *pixelator, uint8_t *command_buffer){
 
 //Wrapper for the read function to receive bytes from the serial connection.
 void wait_for_carver_response( PixelatorState *pixelator ){
-    if( read(pixelator->carver_handle, pixelator->readbuffer, READ_BUFFER_SIZE) == -1 ){
-      ferr("Failed to read from carver\n");
-      perror("");
-      exit(-1);
-    } else {
-      fnote( "Carver sent back (this probably isn't formatted correctly): %x\n", pixelator->readbuffer );
-    }
+  if(pixelator == NULL){
+    ferr("Failed to wait for carver. Invalid pixelator state provided.\n");
+    return;
+  }
+  if( read(pixelator->carver_handle, pixelator->readbuffer, READ_BUFFER_SIZE) == -1 ){
+    ferr("Failed to read from carver\n");
+    perror("");
+    exit(-1);
+  } else {
+    fnote( "Carver sent back (this probably isn't formatted correctly): %x\n", pixelator->readbuffer );
+  }
 }
 
 //This function changes the laser intensity setting of the laser. Values between 0 and a.

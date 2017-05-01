@@ -16,6 +16,10 @@ Pixel *streamer__get_bottom_right_pixel(PixelatorState* state){
 }
 
 Pixel *streamer__get_next_pixel(PixelatorState* state){
+  if( state == NULL )
+    return NULL;
+  else if(state->px == NULL)
+    return NULL;
   Pixel *pixel = streamer__get_top_left_pixel(state);
   return pixel;
 }
