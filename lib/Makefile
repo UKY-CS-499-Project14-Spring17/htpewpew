@@ -6,6 +6,7 @@ test_helpers = tests/helpers.c tests/streamer_test_overrides.c
 gcc_opts = -Wall
 # list of all files to be cleaned
 objs = image.o cli.o pixelator.o streamer.o
+sources = image.c cli.c pixelator.c streamer.c
 clean_files = $(objs) htpewpew debug test
 
 htpewpew: $(objs) main.c
@@ -16,9 +17,9 @@ debug: $(objs) main.c
 	@echo "gcc $(gcc_opts) -g main.c $(objs) -o debug"
 	@gcc $(gcc_opts) -g main.c $(objs) -o debug $(magick_libs)
 
-test: test.c $(tests) $(objs) $(test_helpers)
-	@echo "gcc $(gcc_opts) -g test.c $(test_helpers) $(objs) -o test"
-	@gcc $(gcc_opts) -g test.c $(test_helpers) $(objs) -o test $(magick_libs) -DTESTOVERRIDE
+test: test.c $(tests) $(sources) $(test_helpers)
+	@echo "gcc $(gcc_opts) -g test.c $(test_helpers) $(sources) -o test $(magick_libs) -DTESTOVERRIDE"
+	@gcc $(gcc_opts) -g test.c $(test_helpers) $(sources) -o test $(magick_libs) -DTESTOVERRIDE
 	./test
 
 # don't print the magick_libs garbage, please use this as a template

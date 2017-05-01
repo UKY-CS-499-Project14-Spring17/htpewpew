@@ -4,6 +4,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <sys/socket.h>
 #include "streamer_test_overrides.h"
 
 int stream_test_1();
@@ -37,6 +38,7 @@ int streamer_tests(){
   results = results | get_next_pixel_count_test_3();
   results = results | get_next_pixel_count_test_4();
   results = results | initialize_carver_test_1();
+  results = results | initialize_carver_test_2();
   return results;
 }
 
@@ -369,38 +371,83 @@ int initialize_carver_test_1(){
   }
 }
 
-//int initialize_carver_test_2(){
-//  int fdn[2];
-//  if(socketpair(AF_LOCAL, SOCK_STREAM, 0, fdn) < 0)
-//    perror("Unable to create socket pair.\n");
-//
-//  if (fork() == 0) {
-//    HTPewPewOpts test_opts;
-//    PixelatorState pixelator;
-//
-//    dup2(fdn[1], STDERR_FILENO);
-//    initialize_carver(&pixelator, test_opts);
-//    close(fdn[1]);
-//    exit(0);
-//  } else {
-//    close(fdn[1]);
-//    // parent process
-//    tmsg("initialize_carver_test_1\n");
-//    int wstat;
-//    wait( &wstat );
-//    char errmsg[84];
-//    char experrmsg[84] = KBLD KRED "Error: Failed to initialize carver. Invalid pixelator state provided.\n" KNRM;
-//    read(fdn[0], errmsg, 84);
-//    errmsg[83] = '\0';
-//
-//    if( strcmp(errmsg,experrmsg) == 0 ) {
-//      tpass("\n");
-//      return 0;
-//    } else { 
-//      tfail("message did not match expected.\n");
-//      ttext("%d %s\n",strlen(errmsg), errmsg);
-//      ttext("%d %s\n",strlen(experrmsg), experrmsg);
-//      return 1;
-//    }
-//  }
-//}
+int initialize_carver_test_2(){
+  int fdn[2];
+  if(socketpair(AF_LOCAL, SOCK_STREAM, 0, fdn) < 0)
+    perror("Unable to create socket pair.\n");
+
+  if (fork() == 0) {
+    HTPewPewOpts test_opts;
+    PixelatorState pixelator;
+    
+    test_opts.burn = 50;
+    test_opts.intensity = 5;
+
+    uint8_t buffer[256];
+    pixelator.carver_handle = fdn[0];
+    pixelator.readbuffer    = buffer;
+    
+    initialize_carver(&pixelator, test_opts);
+
+    exit(0);
+  } else {
+    PixelatorState *pixelator = NULL;
+    get_top_left_pixel(pixelator);
+    bla(pixelator);
+    // parent process
+    tmsg("initialize_carver_test_2\n");
+    int finished = 0;
+    int failed   = 0;
+
+    uint8_t command_buffer[7];
+    char response[10] = "123456789";
+
+    int wstat;
+    wait( &wstat );
+
+    uint8_t valid_commands[8][7] = {
+      {0x1a, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff},
+      {0x33, 0x05, 0x00, 0x00, 0x00, 0x00, 0xff},
+      {0x17, 0x32, 0x00, 0x00, 0x00, 0x00, 0xff},
+      {0x1b, 0x01, 0x00, 0x01, 0x20, 0x00, 0xff},
+      {0x1b, 0x01, 0x01, 0x01, 0x21, 0x01, 0xff},
+      {0x1c, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff},
+      {0x18, 0x01, 0x00, 0x01, 0x20, 0x00, 0xff},
+      {0x15, 0x01, 0x01, 0x00, 0x00, 0x00, 0xff}
+    };
+    int command_index = 0;
+
+    while( !finished ){
+      if(read(fdn[1], command_buffer, 7)<0)
+        perror("Test failed to read: ");
+
+      if(command_buffer[0] == HANDSHAKE_CMD         ||
+         command_buffer[0] == MAX_PIXEL_COUNTER_BW  ||
+         command_buffer[0] == HALF_PIXEL_COUNTER_BW){
+        if(write( fdn[1], response, 10)<0) perror("Test failed to write");
+      }else if(command_buffer[0] == INIT_CMD){
+        finished = 1;
+        if(write( fdn[1], response, 10)<0) perror("Test failed to write");
+      }
+      for( int i=0; i<7; i++){
+        if(command_buffer[i] != valid_commands[command_index][i]){
+          failed = 1;
+          tmsg("Expected: %#02x %#02x %#02x %#02x %#02x %#02x %#02x\nActual:   %#02x %#02x %#02x %#02x %#02x %#02x %#02x\n",
+              valid_commands[command_index][0], valid_commands[command_index][1], valid_commands[command_index][2], valid_commands[command_index][3],
+              valid_commands[command_index][4], valid_commands[command_index][5], valid_commands[command_index][6], command_buffer[0], command_buffer[1],
+              command_buffer[2], command_buffer[3], command_buffer[4], command_buffer[5], command_buffer[6]);
+          break;
+        }
+      }
+      command_index++;
+    }
+
+    if( !failed ) {
+      tpass("\n");
+      return 0;
+    } else { 
+      tfail("output did not match expected.\n");
+      return 1;
+    }
+  }
+}

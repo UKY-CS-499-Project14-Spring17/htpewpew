@@ -12,6 +12,7 @@ commands such as setting laser intensity and burn time.
 */
 
 #include "streamer.h"
+#include "tests/streamer_test_overrides.h"
 
 //This function handles streaming the instructions to the engraver. 
 //It sets up the serial initialization, sends the first 5 instructions 
@@ -44,6 +45,10 @@ void stream(PixelatorState *pixelator, HTPewPewOpts options){
 
   //Free the read buffer.
   free(pixelator->readbuffer);
+}
+
+void bla(PixelatorState *pixelator){
+  get_top_left_pixel(pixelator);
 }
 
 //This function sends the appropriate command to carve a single pixel to the engraver.
@@ -295,7 +300,8 @@ int initialize_serial_port( HTPewPewOpts options) {
 
 //Wrapper for the write function to send bytes over the serial connection.
 void send_command( PixelatorState *pixelator, uint8_t *command_buffer){
-  write( pixelator->carver_handle, command_buffer, COMMAND_SIZE);
+  if(write( pixelator->carver_handle, command_buffer, COMMAND_SIZE)<0)
+    perror("Unable to send command");
   usleep(10000);
 }
 
