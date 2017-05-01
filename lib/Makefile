@@ -17,8 +17,8 @@ debug: $(objs) main.c
 	@gcc $(gcc_opts) -g main.c $(objs) -o debug $(magick_libs)
 
 test: test.c $(tests) $(objs) $(test_helpers)
-	@echo "gcc $(gcc_opts) test.c $(test_helpers) $(objs) -o test"
-	@gcc $(gcc_opts) test.c $(test_helpers) $(objs) -o test $(magick_libs)
+	@echo "gcc $(gcc_opts) -g test.c $(test_helpers) $(objs) -o test"
+	@gcc $(gcc_opts) -g test.c $(test_helpers) $(objs) -o test $(magick_libs)
 	./test
 
 # don't print the magick_libs garbage, please use this as a template

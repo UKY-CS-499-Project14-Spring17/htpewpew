@@ -48,6 +48,14 @@ void stream(PixelatorState *pixelator, HTPewPewOpts options){
 
 //This function sends the appropriate command to carve a single pixel to the engraver.
 void send_pixel_command( PixelatorState *pixelator, uint8_t command, Pixel *pixel, uint8_t aux_code ){
+  if(pixelator == NULL){
+    ferr("Failed to send pixel command. Invalid pixelator state provided.\n");
+    return;
+  }
+  if(pixel == NULL){
+    ferr("Failed to send pixel command. Invalid pixel provided.\n");
+    return;
+  }
   
   //Create a buffer to construct the 7 bytes of the command.
   uint8_t *pixel_command_buffer = (uint8_t *) malloc( COMMAND_SIZE * sizeof pixel_command_buffer );
@@ -75,6 +83,10 @@ void send_pixel_command( PixelatorState *pixelator, uint8_t command, Pixel *pixe
 //the engraver so that we know the engraver has room in its instruction buffer for 
 //more instructions.
 uint8_t get_next_pixel_count( PixelatorState *pixelator, uint8_t previous_pixel_count ){
+  if(pixelator == NULL){
+    ferr("Failed to get next pixel count. Invalid pixelator state provided.\n");
+    return;
+  }
   uint8_t next_pixel_count = 0;
   
   //If the count is at 78 in hex then the next count needs to be 3e 
@@ -95,10 +107,8 @@ uint8_t get_next_pixel_count( PixelatorState *pixelator, uint8_t previous_pixel_
     //If the instruction count somehow got out of range then exit the program.
   } else if( previous_pixel_count > MAX_PIXEL_COUNTER_BW || previous_pixel_count < MIN_PIXEL_COUNTER_BW ){
 
-    ferr( "Pixel count out of bounds with value %02x. Something went wrong.", previous_pixel_count );
-
-    //If the instruction count is not a special number, 3e, 78, or 5a increment
-    //it and there is no need to read.
+    ferr( "Pixel count out of bounds with value %#04x. Something went wrong.\n", previous_pixel_count );
+    exit(-1);
   } else {
 
     next_pixel_count = previous_pixel_count + 1;
@@ -303,10 +313,11 @@ void send_command( PixelatorState *pixelator, uint8_t *command_buffer){
 //Wrapper for the read function to receive bytes from the serial connection.
 void wait_for_carver_response( PixelatorState *pixelator ){
     if( read(pixelator->carver_handle, pixelator->readbuffer, READ_BUFFER_SIZE) == -1 ){
-      ferr("Failed to read from carver");
+      ferr("Failed to read from carver\n");
+      perror("");
       exit(-1);
     } else {
-      fnote( "Carver sent back (this probably isn't formatted correctly): %x", pixelator->readbuffer );
+      fnote( "Carver sent back (this probably isn't formatted correctly): %x\n", pixelator->readbuffer );
     }
 }
 
