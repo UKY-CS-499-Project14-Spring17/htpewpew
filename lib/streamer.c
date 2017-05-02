@@ -49,10 +49,6 @@ void stream(PixelatorState *pixelator, HTPewPewOpts options){
   free(pixelator->readbuffer);
 }
 
-void bla(PixelatorState *pixelator){
-  get_top_left_pixel(pixelator);
-}
-
 //This function sends the appropriate command to carve a single pixel to the engraver.
 void send_pixel_command( PixelatorState *pixelator, uint8_t command, Pixel *pixel, uint8_t aux_code ){
   if(pixelator == NULL){
