@@ -23,6 +23,7 @@ int finalize_carving_test_1();
 int finalize_carving_test_2();
 int init_serial_port_test_1();
 int init_serial_port_test_2();
+int init_serial_port_test_3();
 int send_command_test_1();
 int send_command_test_2();
 int wait_test_1();
@@ -43,6 +44,9 @@ int streamer_tests(){
   results |= carve_image_test_2();
   results |= finalize_carving_test_1();
   results |= finalize_carving_test_2();
+  results |= init_serial_port_test_1();
+  results |= init_serial_port_test_2();
+  results |= init_serial_port_test_3();
   results |= send_command_test_1();
   results |= send_command_test_2();
   results |= wait_test_1();
@@ -290,6 +294,8 @@ int get_next_pixel_count_test_3(){
     uint8_t actual_count;
     actual_count = get_next_pixel_count(&pixelator,previous_pixel_count);
     
+    int wstat;
+    wait( &wstat );
     char errmsg[256];
     read(fdn[0], errmsg, 256);
 
@@ -406,9 +412,6 @@ int initialize_carver_test_2(){
     uint8_t command_buffer[7];
     char response[10] = "123456789";
 
-    int wstat;
-    wait( &wstat );
-
     uint8_t valid_commands[8][7] = {
       {0x1a, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff},
       {0x33, 0x05, 0x00, 0x00, 0x00, 0x00, 0xff},
@@ -445,6 +448,8 @@ int initialize_carver_test_2(){
       }
       command_index++;
     }
+    int wstat;
+    wait( &wstat );
 
     if( !failed ) {
       tpass("\n");
@@ -697,6 +702,80 @@ int wait_test_1(){
     read(fdn[0], errmsg, 82);
     close(fdn[0]);
     errmsg[81] = '\0';
+    if( strcmp(errmsg,experrmsg) == 0 ) {
+      tpass("\n");
+      return 0;
+    } else { 
+      tfail("message did not match expected.\n");
+      ttext("%d %s\n",strlen(errmsg), errmsg);
+      ttext("%d %s\n",strlen(experrmsg), experrmsg);
+      return 1;
+    }
+  }
+}
+
+int init_serial_port_test_1(){
+  HTPewPewOpts options = {};
+  options.port = NULL;
+
+  tmsg("init_serial_port_test_1");
+
+  int serial_port_fd = initialize_serial_port(options);
+
+  if( serial_port_fd > 0 ) {
+    tpass("\n");
+    return 0;
+  } else { 
+    tfail("return value did not match expected.\n");
+    ttext("Expected: positive integer\n");
+    ttext("Actual:   %d\n", serial_port_fd);
+    return 1;
+  }
+}
+
+int init_serial_port_test_2(){
+  HTPewPewOpts options = {};
+  options.port = "/dev/pts/7";
+
+  tmsg("init_serial_port_test_2");
+
+  int serial_port_fd = initialize_serial_port(options);
+
+  if( serial_port_fd > 0 ) {
+    tpass("\n");
+    return 0;
+  } else { 
+    tfail("return value did not match expected.\n");
+    ttext("Expected: positive integer\n");
+    ttext("Actual:   %d\n", serial_port_fd);
+    return 1;
+  }
+}
+int init_serial_port_test_3(){
+  int fdn[2];
+  pipe(fdn);
+  if (fork() == 0) {
+    close(fdn[0]);
+
+    HTPewPewOpts options = {};
+    options.port = "/not_a_file";
+
+    // stdout >> pipe >> strcmp
+    dup2(fdn[1], STDERR_FILENO);
+    initialize_serial_port(options);
+    close(fdn[1]);
+    exit(0);
+  } else {
+    // parent process
+    close(fdn[1]);
+    tmsg("init_serial_port_test_3");
+    int wstat;
+    wait( &wstat );
+    char errmsg[89];
+    char experrmsg[89] = KBLD KRED "Error: Unable to open serial port '/not_a_file': No such file or directory\n" KNRM;
+    read(fdn[0], errmsg, 89);
+    close(fdn[0]);
+    errmsg[88] = '\0';
     if( strcmp(errmsg,experrmsg) == 0 ) {
       tpass("\n");
       return 0;

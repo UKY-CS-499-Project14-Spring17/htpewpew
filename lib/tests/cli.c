@@ -37,9 +37,9 @@ int cli_1(){
       tfail("set_silent() did not check verbose option\n");
       return 1;
     } else {
-      char errmsg[153], *experrmsg = KBLD KRED "Error: Cannot be both silent and verbose\n" KNRM;
-      read(fdn[0], errmsg, 152);
-      errmsg[152] = '\0';
+      char errmsg[55], *experrmsg = KBLD KRED "Error: Cannot be both silent and verbose\n" KNRM;
+      read(fdn[0], errmsg, 55);
+      errmsg[54] = '\0';
       if( strcmp(errmsg,experrmsg) == 0 ) {
         tpass("\n");
         return 0;
@@ -81,9 +81,9 @@ int cli_2(){
       tfail("set_verbose() did not check silent option\n");
       return 1;
     } else {
-      char errmsg[153], *experrmsg = KBLD KRED "Error: Cannot be both silent and verbose\n" KNRM;
-      read(fdn[0], errmsg, 152);
-      errmsg[152] = '\0';
+      char errmsg[55], *experrmsg = KBLD KRED "Error: Cannot be both silent and verbose\n" KNRM;
+      read(fdn[0], errmsg, 55);
+      errmsg[54] = '\0';
       if( strcmp(errmsg,experrmsg) == 0 ) {
         tpass("\n");
         return 0;

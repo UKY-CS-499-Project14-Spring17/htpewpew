@@ -11,6 +11,8 @@ It also handles construction the instructions for all of the other
 commands such as setting laser intensity and burn time.
 */
 
+#include <string.h>
+#include <errno.h>
 #include "streamer.h"
 #include "tests/streamer_test_overrides.h"
 
@@ -285,10 +287,10 @@ int initialize_serial_port( HTPewPewOpts options) {
   //if no port is specified open serial connection on default port
   if(options.port == NULL) {
     fd = open(MODEMDEVICE, O_RDWR | O_NOCTTY ); 
-    if (fd <0) {perror(MODEMDEVICE); exit(-1); }
+    if (fd <0) {ferr("Unable to open serial port '%s': %s\n",MODEMDEVICE,strerror(errno)); exit(-1); }
   } else {
     fd = open(options.port, O_RDWR | O_NOCTTY ); 
-    if (fd <0) {perror(MODEMDEVICE); exit(-1); }
+    if (fd <0) {ferr("Unable to open serial port '%s': %s\n",options.port,strerror(errno)); exit(-1); }
   }
 
   tcgetattr(fd,&oldtio); /* save current port settings */
