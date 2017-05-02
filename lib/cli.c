@@ -17,6 +17,7 @@ text depending on whether it is a warning, error, or just a note.
 //If so report to the user and exit the program.
 void set_silent() {
   silent = 1;
+//printf("Silent = %d \n", silent);
   if( verbose ) {
     ferr("Cannot be both silent and verbose\n");
     exit(1);
@@ -27,6 +28,7 @@ void set_silent() {
 //If so report to the user and exit the program.
 void set_verbose() {
   verbose = 1;
+//printf("Verbose = %d \n", verbose);
   if( silent ) {
     ferr("Cannot be both silent and verbose\n");
     exit(1);
