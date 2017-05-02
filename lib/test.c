@@ -9,8 +9,8 @@
 
 int main() {
   set_silent();
-  int results;
-  //results = image_tests() || streamer_tests();
-  results = streamer_tests();
+  int results = 0;
+  results |= image_tests();
+  results |= streamer_tests();
   return results;
 }

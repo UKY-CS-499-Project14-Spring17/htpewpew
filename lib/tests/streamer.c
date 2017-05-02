@@ -29,23 +29,23 @@ int wait_test_1();
 
 int streamer_tests(){
   int results = 0;
-  results = results | stream_test_1();
-  results = results | send_pixel_command_test_1();
-  results = results | send_pixel_command_test_2();
-  results = results | send_pixel_command_test_3();
-  results = results | get_next_pixel_count_test_1();
-  results = results | get_next_pixel_count_test_2();
-  results = results | get_next_pixel_count_test_3();
-  results = results | get_next_pixel_count_test_4();
-  results = results | initialize_carver_test_1();
-  results = results | initialize_carver_test_2();
-  results = results | carve_image_test_1();
-  results = results | carve_image_test_2();
-  results = results | finalize_carving_test_1();
-  results = results | finalize_carving_test_2();
-  results = results | send_command_test_1();
-  results = results | send_command_test_2();
-  results = results | wait_test_1();
+  results |= stream_test_1();
+  results |= send_pixel_command_test_1();
+  results |= send_pixel_command_test_2();
+  results |= send_pixel_command_test_3();
+  results |= get_next_pixel_count_test_1();
+  results |= get_next_pixel_count_test_2();
+  results |= get_next_pixel_count_test_3();
+  results |= get_next_pixel_count_test_4();
+  results |= initialize_carver_test_1();
+  results |= initialize_carver_test_2();
+  results |= carve_image_test_1();
+  results |= carve_image_test_2();
+  results |= finalize_carving_test_1();
+  results |= finalize_carving_test_2();
+  results |= send_command_test_1();
+  results |= send_command_test_2();
+  results |= wait_test_1();
   return results;
 }
 
@@ -65,7 +65,7 @@ int stream_test_1(){
   } else {
     // parent process
     close(fdn[1]);
-    tmsg("stream_test_1\n");
+    tmsg("stream_test_1");
     int wstat;
     wait( &wstat );
     char errmsg[73];
@@ -106,7 +106,7 @@ int send_pixel_command_test_1(){
   } else {
     // parent process
     close(fdn[1]);
-    tmsg("send_pixel_command_test_1\n");
+    tmsg("send_pixel_command_test_1");
     int wstat;
     wait( &wstat );
     char errmsg[85];
@@ -144,7 +144,7 @@ int send_pixel_command_test_2(){
   } else {
     // parent process
     close(fdn[1]);
-    tmsg("send_pixel_command_test_2\n");
+    tmsg("send_pixel_command_test_2");
     int wstat;
     wait( &wstat );
     char errmsg[75];
@@ -186,7 +186,7 @@ int send_pixel_command_test_3(){
   } else {
     // parent process
     close(fdn[1]);
-    tmsg("send_pixel_command_test_3\n");
+    tmsg("send_pixel_command_test_3");
     int wstat;
     wait( &wstat );
     char output[7];
@@ -222,7 +222,7 @@ int get_next_pixel_count_test_1(){
   } else {
     close(fdn[1]);
     // parent process
-    tmsg("get_next_pixel_count_test_1\n");
+    tmsg("get_next_pixel_count_test_1");
     int wstat;
     wait( &wstat );
     char errmsg[87];
@@ -247,7 +247,7 @@ int get_next_pixel_count_test_2(){
   uint8_t previous_pixel_count = 0x3d;
 
   // parent process
-  tmsg("get_next_pixel_count_test_2\n");
+  tmsg("get_next_pixel_count_test_2");
   uint8_t expected_count = 0x3e;
 
   uint8_t actual_count;
@@ -284,7 +284,7 @@ int get_next_pixel_count_test_3(){
     pixelator.readbuffer    = buffer;
 
     // parent process
-    tmsg("get_next_pixel_count_test_3\n");
+    tmsg("get_next_pixel_count_test_3");
     uint8_t expected_count = 0x3d;
 
     uint8_t actual_count;
@@ -322,7 +322,7 @@ int get_next_pixel_count_test_4(){
   } else {
     // parent process
     close(fdn[1]);
-    tmsg("get_next_pixel_count_test_4\n");
+    tmsg("get_next_pixel_count_test_4");
     int wstat;
     wait( &wstat );
     char errmsg[86];
@@ -358,7 +358,7 @@ int initialize_carver_test_1(){
   } else {
     close(fdn[1]);
     // parent process
-    tmsg("initialize_carver_test_1\n");
+    tmsg("initialize_carver_test_1");
     int wstat;
     wait( &wstat );
     char errmsg[84];
@@ -399,7 +399,7 @@ int initialize_carver_test_2(){
     exit(0);
   } else {
     // parent process
-    tmsg("initialize_carver_test_2\n");
+    tmsg("initialize_carver_test_2");
     int finished = 0;
     int failed   = 0;
 
@@ -472,7 +472,7 @@ int carve_image_test_1(){
   } else {
     // parent process
     close(fdn[1]);
-    tmsg("carve_image_test_1\n");
+    tmsg("carve_image_test_1");
     int wstat;
     wait( &wstat );
     char errmsg[78];
@@ -508,7 +508,7 @@ int carve_image_test_2(){
   } else {
     // parent process
     close(fdn[1]);
-    tmsg("carve_image_test_2\n");
+    tmsg("carve_image_test_2");
     int wstat;
     wait( &wstat );
     char errmsg[73];
@@ -544,7 +544,7 @@ int finalize_carving_test_1(){
   } else {
     // parent process
     close(fdn[1]);
-    tmsg("finalize_carving_test_1\n");
+    tmsg("finalize_carving_test_1");
     int wstat;
     wait( &wstat );
     char errmsg[83];
@@ -580,7 +580,7 @@ int finalize_carving_test_2(){
   } else {
     // parent process
     close(fdn[1]);
-    tmsg("finalize_carving_test_2\n");
+    tmsg("finalize_carving_test_2");
 
     int wstat;
     wait( &wstat );
@@ -618,7 +618,7 @@ int send_command_test_1(){
   } else {
     // parent process
     close(fdn[1]);
-    tmsg("send_command_test_1\n");
+    tmsg("send_command_test_1");
     int wstat;
     wait( &wstat );
     char errmsg[79];
@@ -654,7 +654,7 @@ int send_command_test_2(){
   } else {
     // parent process
     close(fdn[1]);
-    tmsg("send_command_test_2\n");
+    tmsg("send_command_test_2");
     int wstat;
     wait( &wstat );
     char errmsg[71];
@@ -689,7 +689,7 @@ int wait_test_1(){
   } else {
     // parent process
     close(fdn[1]);
-    tmsg("wait_test_1\n");
+    tmsg("wait_test_1");
     int wstat;
     wait( &wstat );
     char errmsg[82];

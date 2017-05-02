@@ -18,7 +18,7 @@ debug: $(objs) main.c
 	@gcc $(gcc_opts) -g main.c $(objs) -o debug $(magick_libs)
 
 test: test.c $(tests) $(sources) $(test_helpers)
-	@echo "gcc $(gcc_opts) -g test.c $(test_helpers) $(sources) -o test $(magick_libs) -DTESTOVERRIDE"
+	@echo "gcc $(gcc_opts) -g test.c $(test_helpers) $(sources) -o test -DTESTOVERRIDE"
 	@gcc $(gcc_opts) -g test.c $(test_helpers) $(sources) -o test $(magick_libs) -DTESTOVERRIDE
 	./test
 
