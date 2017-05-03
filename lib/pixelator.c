@@ -187,6 +187,14 @@ Pixel* get_bottom_right_pixel(PixelatorState* state) {
 //down from the given pixel until it finds one that is dark 
 //enough to be engraved.
 Pixel* get_next_pixel(PixelatorState* state) {
+  if( state == NULL ) {
+    ferr("State in pixelator_init is NULL. Use the pixelator.c/pixelator_init function first.\n");
+    exit(-1);
+  }
+  if( state->wand == NULL ) {
+    ferr("Wand in pixelator_init is NULL. Use the image.c/prepare_image function first.\n");
+    exit(-1);
+  }
   // allocate space for the pixel, return the pointer
   size_t width, height;
   short x = state->x + 1;

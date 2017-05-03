@@ -458,6 +458,155 @@ int bottom_right_pixel_test_4(PixelatorState state) {
   return retval;
 }
 
+// test #1
+// state pointer is a NULL
+// should exit and display an error
+int get_next_pixel_test_1() {
+  // setup fork
+  int fdn[2];
+  pipe(fdn);
+
+  if (fork() == 0) {
+
+    // stdout >> pipe >> strcmp
+    dup2(fdn[1], STDERR_FILENO);
+    PixelatorState* state = NULL;
+    get_next_pixel(state);
+    close(fdn[1]);
+    exit(0);
+  } else {
+    // parent process
+    close(fdn[1]);
+    tmsg("get_next_pixel_test_1");
+    int wstat;
+    wait( &wstat );
+    char errmsg[105];
+    char experrmsg[105] = KBLD KRED "Error: State in pixelator_init is NULL. Use the pixelator.c/pixelator_init function first.\n" KNRM;
+    read(fdn[0], errmsg, 104);
+    close(fdn[0]);
+    errmsg[104] = 0;
+    if( strcmp(errmsg,experrmsg) == 0 ) {
+      tpass("\n");
+      return 0;
+    } else { 
+      tfail("message did not match expected.\n");
+      ttext("%d %s\n",strlen(errmsg), errmsg);
+      ttext("%d %s\n",strlen(experrmsg), experrmsg);
+      return 1;
+    }
+  }
+}
+
+// test #2
+// wand` pointer is a NULL
+// should exit and display an error
+int get_next_pixel_test_2(PixelatorState state) {
+  // setup fork
+  int fdn[2];
+  pipe(fdn);
+
+  if (fork() == 0) {
+
+    // stdout >> pipe >> strcmp
+    dup2(fdn[1], STDERR_FILENO);
+    state.wand = NULL;
+    get_next_pixel(&state);
+    close(fdn[1]);
+    exit(0);
+  } else {
+    // parent process
+    close(fdn[1]);
+    tmsg("get_next_pixel_test_2");
+    int wstat;
+    wait( &wstat );
+    char errmsg[99];
+    char experrmsg[99] = KBLD KRED "Error: Wand in pixelator_init is NULL. Use the image.c/prepare_image function first.\n" KNRM;
+    read(fdn[0], errmsg, 98);
+    close(fdn[0]);
+    errmsg[98] = 0;
+    if( strcmp(errmsg,experrmsg) == 0 ) {
+      tpass("\n");
+      return 0;
+    } else { 
+      tfail("message did not match expected.\n");
+      ttext("%d %s\n",strlen(errmsg), errmsg);
+      ttext("%d %s\n",strlen(experrmsg), experrmsg);
+      return 1;
+    }
+  }
+}
+
+// test #3
+// pixel pointer is NULL
+// should allocate a pixel
+int get_next_pixel_test_3(PixelatorState state) {
+  int retval = 1;
+  state.px = NULL;
+  Pixel* px = get_next_pixel(&state);
+  tmsg("get_next_pixel_test_3");
+  // check pixel value, remember these are centered
+  if( px == NULL ) {
+    tpass("\n");
+    retval = 0;
+  } else {
+    tfail("Actual Pixel value = (%d,%d)\n", px->x, px->y);
+  }
+  return retval;
+}
+
+// test #4
+// pixel iterator pointer is NULL
+// should allocate an iterator
+int get_next_pixel_test_4(PixelatorState state) {
+  int retval = 1;
+  state.it = NULL;
+  Pixel* px = get_next_pixel(&state);
+  tmsg("get_next_pixel_test_4");
+  // check pixel value, remember these are centered
+  if( px == NULL ) {
+    tpass("\n");
+    retval = 0;
+  } else {
+    tfail("Actual Pixel value = (%d,%d)\n", px->x, px->y);
+  }
+  return retval;
+}
+
+// test #5
+// normal image
+int get_next_pixel_test_5(PixelatorState state) {
+  int retval = 1;
+  Pixel* px = get_next_pixel(&state);
+  tmsg("get_next_pixel_test_5");
+  // check pixel value
+  if( px->x == 239 && px->y == 244 ) {
+    tpass("\n");
+    retval = 0;
+  } else {
+    tfail("Actual Pixel value = (%d,%d)\n", px->x, px->y);
+  }
+  return retval;
+}
+
+// test #6
+// image with no dark pixels
+int get_next_pixel_test_6(HTPewPewOpts opts) {
+  int retval = 1;
+  opts.infile = "tests/white.jpg";
+  MagickWand* wand = prepare_image(opts);
+  PixelatorState* state = pixelator_init(opts,wand);
+  Pixel* px = get_next_pixel(state);
+  tmsg("get_next_pixel_test_6");
+  // check pixel value, remember these are centered
+  if( px == NULL ) {
+    tpass("\n");
+    retval = 0;
+  } else {
+    tfail("Actual Pixel value = (%d,%d)\n", px->x, px->y);
+  }
+  return retval;
+}
+
 
 int pixelator_tests() {
   int retval = 0;
@@ -494,6 +643,12 @@ int pixelator_tests() {
   retval |= bottom_right_pixel_test_2(state);
   retval |= bottom_right_pixel_test_3(opts);
   retval |= bottom_right_pixel_test_4(state);
+  retval |= get_next_pixel_test_1();
+  retval |= get_next_pixel_test_2(state);
+  //retval |= get_next_pixel_test_3(state);
+  //retval |= get_next_pixel_test_4(state);
+  //retval |= get_next_pixel_test_5(state);
+  retval |= get_next_pixel_test_6(opts);
 
   // do cleanup
   wand = DestroyMagickWand(wand);

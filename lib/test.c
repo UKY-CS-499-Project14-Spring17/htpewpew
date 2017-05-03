@@ -4,11 +4,12 @@
 #include "tests/helpers.h"
 
 // include each file from test/ dir
+// overrides in tests/streamer_test_overrides.h break these pixelator tests
 #include "tests/image.c"
+#include "tests/pixelator.c"
 #include "tests/streamer.c"
 #include "tests/main.c"
 #include "tests/cli.c"
-#include "tests/pixelator.c"
 
 int main() {
   //set_silent();
