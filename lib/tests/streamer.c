@@ -735,7 +735,7 @@ int init_serial_port_test_1(){
 
 int init_serial_port_test_2(){
   HTPewPewOpts options = {};
-  options.port = "/dev/pts/5";
+  options.port = "/dev/pts/0";
 
   tmsg("init_serial_port_test_2");
 

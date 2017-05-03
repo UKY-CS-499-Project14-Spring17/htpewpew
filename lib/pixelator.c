@@ -47,6 +47,10 @@ int center_pixel(PixelatorState* state) {
 //compatible with the engraver's protocol.
 // TODO: use PixelGetBlackQuantum(pixel) instead of GetHSL
 unsigned char get_pixel_intensity(PixelWand* pixel) {
+  if( pixel == NULL ) {
+    ferr("Pixel value in get_pixel_intensity is NULL\n");
+    exit(-1);
+  }
   double hue, sat, light_d;
   unsigned char darkness;
   // for each x value, move through each pixel
@@ -61,6 +65,10 @@ unsigned char get_pixel_intensity(PixelWand* pixel) {
 //struct and setting the starting values inside it.
 PixelatorState* pixelator_init(HTPewPewOpts opts, MagickWand* wand) {
   // allocate space for the state, return the pointer
+  if( wand == NULL ) {
+    ferr("Wand in pixelator_init is NULL. Use the image.c/prepare_image function first.\n");
+    exit(-1);
+  }
   PixelatorState* state;
   state = malloc( sizeof(*state) );
   state->it = NewPixelIterator(wand);
@@ -110,6 +118,14 @@ Pixel scan_until_dark_pixel(PixelatorState* state) {
 //This function scans through the image to find the top left most 
 //pixel. The engraver needs this information in its protocol.
 Pixel* get_top_left_pixel(PixelatorState* state) {
+  if( state == NULL ) {
+    ferr("State in pixelator_init is NULL. Use the pixelator.c/pixelator_init function first.\n");
+    exit(-1);
+  }
+  if( state->wand == NULL ) {
+    ferr("Wand in pixelator_init is NULL. Use the image.c/prepare_image function first.\n");
+    exit(-1);
+  }
   PixelWand* pwhite;
   if( state->px == NULL )
     state->px = malloc( sizeof(*(state->px)) );
@@ -133,6 +149,14 @@ Pixel* get_top_left_pixel(PixelatorState* state) {
 //This function scans through the image to find the bottom right most 
 //pixel. The engraver needs this information in its protocol.
 Pixel* get_bottom_right_pixel(PixelatorState* state) {
+  if( state == NULL ) {
+    ferr("State in pixelator_init is NULL. Use the pixelator.c/pixelator_init function first.\n");
+    exit(-1);
+  }
+  if( state->wand == NULL ) {
+    ferr("Wand in pixelator_init is NULL. Use the image.c/prepare_image function first.\n");
+    exit(-1);
+  }
   size_t width, height;
   //Get current image height and width.
   width  = MagickGetImageWidth( state->wand );
