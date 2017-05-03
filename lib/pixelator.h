@@ -34,7 +34,7 @@ typedef struct pixelator_state
   uint8_t *readbuffer; 
 } PixelatorState;
 
-void center_pixel(PixelatorState* state);
+int center_pixel(PixelatorState* state);
 unsigned char get_pixel_intensity(PixelWand* pixel);
 
 PixelatorState* pixelator_init(HTPewPewOpts opts, MagickWand* wand);

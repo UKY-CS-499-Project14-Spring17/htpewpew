@@ -8,6 +8,7 @@
 #include "tests/streamer.c"
 #include "tests/main.c"
 #include "tests/cli.c"
+#include "tests/pixelator.c"
 
 int main() {
   //set_silent();
@@ -16,5 +17,6 @@ int main() {
   results |= main_tests();
   results |= streamer_tests();
   results |= cli_tests();
+  results |= pixelator_tests();
   return results;
 }

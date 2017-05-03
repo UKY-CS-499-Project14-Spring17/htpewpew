@@ -18,7 +18,11 @@ streamer.
 //smaller than the max size so that the image is printed in 
 //the middle of the canvas or workspace instead of from the 
 //upper left corner.
-void center_pixel(PixelatorState* state) {
+int center_pixel(PixelatorState* state) {
+  if( state->px == NULL ) {
+    ferr("Pixel value not allocated. Cannot center!\n");
+    return(-1);
+  }
   size_t width, height, padx, pady;
   //Get current image height and width.
   width  = MagickGetImageWidth( state->wand );
@@ -35,6 +39,7 @@ void center_pixel(PixelatorState* state) {
   //Add offset to the pixel.
   state->px->x += state->x_offset;
   state->px->y += state->y_offset;
+  return(0);
 }
 
 //This function finds the brightness of the input pixel 
