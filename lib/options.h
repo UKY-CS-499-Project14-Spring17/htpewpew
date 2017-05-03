@@ -9,7 +9,7 @@ typedef struct htpewpew_opts
   /* infile, -o,  and -p options */
   char *infile, *outfile, *port;
   /* -b, -i, -t, -x, -y options */
-  int burn, intensity, threshold, x, y;
+  int burn, intensity, threshold, x, y, fan_speed;
 } HTPewPewOpts;
 
 #endif

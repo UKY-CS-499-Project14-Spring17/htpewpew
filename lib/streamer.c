@@ -154,6 +154,9 @@ Pixel *initialize_carver(PixelatorState *pixelator, HTPewPewOpts options){
   //Set dwell time.
   change_laser_dwell_time(pixelator, options);
 
+  //Set fan speed.
+  change_fan_speed(pixelator, options);
+
 
   // Send top left border command and confirm it worked.
   Pixel *top_left = get_top_left_pixel(pixelator);
@@ -367,6 +370,24 @@ void change_laser_dwell_time(PixelatorState* pixelator, HTPewPewOpts options){
   // Send command to set the laser intensity. 
   command_buffer[0] = LASER_DWELL_TIME_CMD;
   command_buffer[1] = options.burn;
+  command_buffer[2] = 0x00;
+  command_buffer[3] = 0x00;
+  command_buffer[4] = 0x00;
+  command_buffer[5] = 0x00;
+  command_buffer[6] = 0xff;
+
+  send_command( pixelator, command_buffer );
+  free( command_buffer );
+}
+
+//This function changes the fan speed of the fan. Values between 0 and 10.
+void change_fan_speed(PixelatorState* pixelator, HTPewPewOpts options){
+    
+  uint8_t *command_buffer = (uint8_t *) malloc( COMMAND_SIZE * sizeof command_buffer );
+  
+  // Send command to set the laser intensity. 
+  command_buffer[0] = CHANGE_FAN_SPEED_CMD;
+  command_buffer[1] = options.fan_speed;
   command_buffer[2] = 0x00;
   command_buffer[3] = 0x00;
   command_buffer[4] = 0x00;

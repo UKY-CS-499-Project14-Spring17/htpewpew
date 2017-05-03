@@ -32,6 +32,7 @@ int main (int argc, char **argv)
   options.x         = 0; // TODO
   options.y         = 0; // TODO
   options.shell     = 0;
+  options.fan_speed = 10;
 
 
 
