@@ -28,7 +28,7 @@ static struct argp_option options[] =
   {"bw",        't', "threshold", OPTION_ALIAS,         "Use a threshold (0-100%) for black and white (default = 50%)"},
   {"x-offset",  'x', "x",         0,                    "Automatically offset x location, prefix with 'n' for negative"},
   {"y-offset",  'y', "y",         0,                    "Automatically offset y location  prefix with 'n' for negative"},
-  {"fan speed", 'f', "f",         0,                    "Set the fan speed (0-10 range, default = 10)"},
+  {"fan-speed", 'f', "speed",     0,                    "Set the fan speed (0-10 range, default = 10)"},
   {0,           0,   0,           0,                    "INTERFACE PARAMETERS:"},
   {"verbose",   'v', 0,           0, "Enables additional debugging notes"},
   {"silent",    's', 0,           0, "Supress all standard messages"},
@@ -164,7 +164,7 @@ static error_t parse_opt (int key, char *arg, struct argp_state *state) // check
            ferr("Fan speed must be between 0-10\n");
     	   argp_usage(state);
       } else{
-           fnote("Setting fan speed to %d\n", a->y);
+           fnote("Setting fan speed to %d\n", a->fan_speed);
       }
       break;
     //The verbose and silent options are handled separatley on thier own in parse_verbose().
